@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+git status -s | grep ? | cut -d'?' -f3 | xargs rm -fr

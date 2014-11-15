@@ -1,0 +1,27 @@
+#!/bin/bash
+# Usage:
+# valprof path_to_exec
+
+if [[ "$OSTYPE" == "linux-gnu" ]]; then
+    tempLog=`mktemp`
+    tool="kcachegrind"
+    extraArgs="--fn-skip=_dl_runtime_resolve --fn-skip=_dl_addr --fn-skip=_dl_fixup --fn-skip=_dl_lookup_symbol*"
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+    tempLog=`mktemp -t callgrind`
+    tool="qcachegrind"
+    extraArgs="--fn-skip=*dyld* --fn-skip=*ImageLoader* --fn-skip=*llvm*gcov*"
+else
+    echo ERROR: Cannot run valgrind on this platform
+    exit 1
+fi
+echo "Temp file: $tempLog"
+
+cmd="valgrind --tool=callgrind --toggle-collect=test_* ${extraArgs} --callgrind-out-file=$tempLog $@"
+echo "Running command: '$cmd'"
+
+($cmd >& /dev/null)
+
+cmd="$tool $tempLog"
+echo "Running command: '$cmd'"
+
+($cmd >& /dev/null) &

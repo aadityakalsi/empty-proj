@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+tools_dir=$(cd "$(dirname "$0")"; pwd)
+proj_dir=`dirname ${tools_dir}`
+
+
+PARAMS=""
+for PARAM in "$@"
+do
+  PARAMS="${PARAMS} \"${PARAM}\""
+done
+
+git commit -m "${PARAMS}" && git push
+

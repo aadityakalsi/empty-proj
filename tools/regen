@@ -1,0 +1,45 @@
+#!/bin/bash
+
+tools_dir=$(cd "$(dirname "$0")"; pwd)
+proj_dir=`dirname ${tools_dir}`
+
+cd ${proj_dir}
+
+shopt -s nocasematch
+
+if [[ $1 == *release* ]]
+then
+  bldType="Release"
+else
+  bldType="Debug"
+fi
+
+if [ $# -eq 2 ]
+then
+  genArg="-G"
+  genType="$2"
+  echo "Using generator: $2"
+else
+  genArg=""
+  genType=""
+fi
+
+build_dir=${proj_dir}/build
+
+if [ -d "${build_dir}" ];
+then
+    echo "Build directory exists..."
+
+    while true; do
+        read -p "Do you wish clean the build and re-run? (y/n) " yn
+        case $yn in
+            [Yy]* ) rm -fr ${build_dir}/*; echo "Making build directory..."; mkdir -p ${build_dir}; cd build; cmake ${genArg} "${genType}" -DCMAKE_BUILD_TYPE_FORCE=${bldType} ../; break;;
+            [Nn]* ) cd build; break;;
+            * ) echo "Please answer yes or no.";;
+        esac
+    done
+else
+    mkdir -p ${build_dir}
+    cd ${build_dir}
+    cmake ${genArg} "${genType}" -DCMAKE_BUILD_TYPE_FORCE=${bldType} ../
+fi

@@ -1,0 +1,34 @@
+#!/bin/bash
+
+tools_dir=$(cd "$(dirname "$0")"; pwd)
+proj_dir=`dirname ${tools_dir}`
+echo ${proj_dir}
+
+olddir=`pwd`
+
+cd ${proj_dir}
+
+# Run clean build
+rm -fr build
+mkdir -p build
+
+cd build
+cmake ..
+
+# Run doc
+cmake --build . --target doc
+
+# go back
+cd ..
+
+# remove old doc
+git rm -fr ${proj_dir}/doc/html
+
+# copy files to doc/html
+mkdir -p ${proj_dir}/doc/html
+cp -rf ${proj_dir}/build/doc/html/* ${proj_dir}/doc/html
+
+# Add to git
+git add ${proj_dir}/doc/html/*
+
+cd ${olddir}

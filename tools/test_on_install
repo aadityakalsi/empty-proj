@@ -1,0 +1,18 @@
+#!/bin/bash
+
+tools_dir=$(cd "$(dirname "$0")"; pwd)
+proj_dir=`dirname ${tools_dir}`
+
+cd ${proj_dir}
+
+PARAMS=""
+for PARAM in "$@"
+do
+  PARAMS="${PARAMS} \"${PARAM}\""
+done
+
+bash -c "echo y | ${tools_dir}/regen ${PARAMS}"
+export VERBOSE=1
+rm -fr ${proj_dir}/install
+cmake --build ${tools_dir}/../build --target check_on_install --config $1
+

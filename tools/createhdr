@@ -1,0 +1,11 @@
+#!/bin/bash
+
+echo "/**" > $1
+echo " * @file: `basename $1`" >> $1
+echo " */" >> $1
+echo "" >> $1
+echo "#ifndef $2" >> $1
+echo "#define $2" >> $1
+echo "" >> $1
+echo "#endif//$2" >> $1
+echo "" >> $1

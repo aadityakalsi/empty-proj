@@ -1,0 +1,14 @@
+#!/bin/bash
+
+tools_dir=$(cd "$(dirname "$0")"; pwd)
+proj_dir=`dirname ${tools_dir}`
+
+cd ${proj_dir}
+
+# Run clean build
+echo y | ${tools_dir}/regen Debug
+
+# Run tests
+cd build
+export VERBOSE=1
+cmake --build . --target code_cov

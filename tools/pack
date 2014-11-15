@@ -1,0 +1,16 @@
+#!/bin/bash
+
+tools_dir=$(cd "$(dirname "$0")"; pwd)
+proj_dir=`dirname ${tools_dir}`
+
+cd ${proj_dir}
+
+PARAMS=""
+for PARAM in "$@"
+do
+  PARAMS="${PARAMS} \"${PARAM}\""
+done
+
+# Run clean build
+bash -c "echo y | ${tools_dir}/build Release ${PARAMS}"
+cd build && cpack -C "Release"
