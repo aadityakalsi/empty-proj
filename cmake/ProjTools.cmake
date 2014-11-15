@@ -233,7 +233,7 @@ endfunction(add_hdrs_ide)
 function(add_test_exe testname filename)
   ## deal with normal test
   include_directories(${PROJ_BASE_DIR})
-  add_exe(${ARGV} ${CMAKE_SOURCE_DIR}/unittest/unittest.h)
+  add_exe(${ARGV})
   
   # On Windows, the custom build detects the "ERROR" word in the
   # output and fails a passing test. We simply detect on the executable's
@@ -254,6 +254,10 @@ function(add_test_exe testname filename)
   # copy the file over
   file(MAKE_DIRECTORY ${test_dirname})
   file(COPY ${filename} DESTINATION ${test_dirname})
+
+  set(install_test_args ${ARGV})
+  list(REMOVE_AT install_test_args 0)
+  list(INSERT install_test_args 0 "${testname}_install")
   
   # generate a CMakeLists.txt
   set("${testname}_gen" 1 CACHE INTERNAL "Base dir" FORCE)
@@ -273,7 +277,7 @@ function(add_test_exe testname filename)
     file(APPEND ${test_dirname}/CMakeLists.txt
       "endif()\n")
     file(APPEND ${test_dirname}/CMakeLists.txt
-      "add_executable(${testname}_install ${filename})\n")
+      "add_executable(${install_test_args} ${CMAKE_SOURCE_DIR}/unittest/unittest.h)\n")
     file(APPEND ${test_dirname}/CMakeLists.txt
       "add_dependencies(${testname}_install install_for_check_done)\n")
   endif()

@@ -8,18 +8,18 @@
  *
  * The only convention is to use a name for a test consistently in the
  * test source file.
- * 
+ *
  * Writing "simple" tests:
  * -----------------------
- * 
+ *
  * \code{.c}
- * 
+ *
  * TEST_FUNC( MyTestName ) {
  *     // if a test setup function was used,
- *     // its return value is available as 
+ *     // its return value is available as
  *     // value of the input variable "testdata"
  *     // which is otherwise, NULL.
- *   
+ *
  *     mySetupData* p = (mySetupData*)testdata;
  *     TEST_TRUE( 1 );
  *     TEST_FALSE( 1 ); // Prints error message and ensures test fails
@@ -40,7 +40,7 @@
  *     SomeInitFunction(&data);
  *     return (void*)&data;
  * }
- * 
+ *
  * TEST_CLEANUP( MyTestName ) {
  *     // testdata implicitly available.
  *     mySetupData* myData = (mySetupData*)testdata;
@@ -50,14 +50,14 @@
  * \endcode
  *
  * The SetupTests function.
- * ------------------------ 
+ * ------------------------
  *
  * This function must be defined in every unit test source file
  * where the calls to REG_TEST or REG_TEST_CASE will be made, and you
  * can optionally add static state for your tests.
  *
  * \code{.c}
- * 
+ *
  * void SetupTests(void) {
  *     REG_TEST( MyTestName ); // If just using a simple test
  *     REG_TEST_CASE( MyTestName ); // With setup/cleanup we register a test case
@@ -66,13 +66,13 @@
  * \endcode
  *
  * For a full example, see:
- * 
+ *
  * \include unittest/test/test_unittest.c
  *
  */
 
-#ifndef CUTILS_UNITTEST_UNITTEST_H
-#define CUTILS_UNITTEST_UNITTEST_H
+#ifndef PROJ_UNITTEST_UNITTEST_H
+#define PROJ_UNITTEST_UNITTEST_H
 
 #if !defined(false)
 #define false 0
@@ -229,35 +229,14 @@ static double TimeCache(TimeCacheOp op) {
 #define BOLDRED     "\033[1m\033[31m"      /* Bold Red */
 #define BOLDGREEN   "\033[1m\033[32m"      /* Bold Green */
 #define BOLDWHITE   "\033[1m\033[37m"      /* Bold White */
-#else
-#define RESET
-#define BLACK
-#define RED
-#define GREEN
-#define BLUE
-#define WHITE
-#define BOLDBLACK
-#define BOLDRED
-#define BOLDGREEN
-#define BOLDWHITE
 #endif
 
 /* Debug printing is always on */
-#ifndef NDEBUG
 #define DEBUG_PRINT_ON 1
-#else
-#define DEBUG_PRINT_ON 1
-#endif
 
-#ifndef _WIN32
+#if defined(_WIN32)
 
-#ifndef DEBUG_COLOR_PRINT_OFF
-#define COLOR_PRINT_ON
-#endif
-
-#endif
-
-#ifndef COLOR_PRINT_ON
+#define FOREGROUND_WHITE 15
 
 /**
  * Print debugging info. Only prints if DEBUG_ON is defined
@@ -265,9 +244,7 @@ static double TimeCache(TimeCacheOp op) {
  */
 #define DEBUG_PRINT(fmt, ...) \
 do { \
-    if (DEBUG_PRINT_ON) { \
-        printf(fmt, ##__VA_ARGS__); \
-    } \
+    printf(fmt, ##__VA_ARGS__); \
 } while(0)
 
 /**
@@ -275,10 +252,45 @@ do { \
  */
 #define ERROR_PRINT(fmt, ...) \
 do { \
-    fprintf(ERR_STRM, "ERROR: " fmt, ##__VA_ARGS__); \
+    HANDLE hConsole; \
+    hConsole = GetStdHandle(STD_ERROR_HANDLE); \
+    SetConsoleTextAttribute(hConsole, FOREGROUND_RED); \
+    fprintf(ERR_STRM, "ERROR: "); \
+    fflush(stderr); \
+    SetConsoleTextAttribute(hConsole, FOREGROUND_WHITE); \
+    fprintf(ERR_STRM, fmt, ##__VA_ARGS__); \
 } while(0)
 
-#else
+/**
+ * Test passed.
+ */
+#define TEST_PASSED_PRINT(testName, timeTaken) \
+do { \
+    HANDLE hConsole; \
+    hConsole = GetStdHandle(STD_OUTPUT_HANDLE); \
+    printf("Test passed:\t"); \
+    SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN); \
+    printf("'%s'", (testName)); \
+    fflush(stdout); \
+    SetConsoleTextAttribute(hConsole, FOREGROUND_WHITE); \
+    printf("\t %f sec\n", (timeTaken)); \
+} while(0)
+
+/**
+ * Test failed.
+ */
+#define TEST_FAILED_PRINT(testName) \
+do { \
+    HANDLE hConsole; \
+    hConsole = GetStdHandle(STD_OUTPUT_HANDLE); \
+    printf("Failed    :\t"); \
+    SetConsoleTextAttribute(hConsole, FOREGROUND_RED); \
+    printf("'%s'", (testName)); \
+    fflush(stdout); \
+    SetConsoleTextAttribute(hConsole, FOREGROUND_WHITE); \
+} while(0)
+
+#else/*UNIX*/
 
 /**
  * Print debugging info. Only prints if DEBUG_ON is defined
@@ -286,9 +298,7 @@ do { \
  */
 #define DEBUG_PRINT(fmt, ...) \
 do { \
-    if (DEBUG_PRINT_ON) { \
-        printf(fmt, ##__VA_ARGS__); \
-    } \
+    printf(fmt, ##__VA_ARGS__); \
 } while(0)
 
 /**
@@ -299,7 +309,24 @@ do { \
     fprintf(ERR_STRM, RED "ERROR: " RESET fmt, ##__VA_ARGS__); \
 } while(0)
 
+/**
+ * Test passed.
+ */
+#define TEST_PASSED_PRINT(testName, timeTaken) \
+do { \
+    printf("Test passed:\t" GREEN "'%s'" RESET "\t %f sec\n", (testName), (timeTaken)); \
+} while(0)
+
+/**
+ * Test failed.
+ */
+#define TEST_FAILED_PRINT(testName) \
+do { \
+    printf("Failed    :\t" RED "'%s'" RESET"\n\n", (testName)); \
+} while(0)
+
 #endif
+
 
 /* ----------------------------------------------------------- */
 
@@ -307,7 +334,7 @@ do { \
 static
 int RunTest(const char* testname,
             TestSetupFunc testsetupfn,
-            TestFunc testfn, 
+            TestFunc testfn,
             TestClnupFunc testcleanupfn) {
     int retval = true;
     void* testdata = NULL;
@@ -317,26 +344,25 @@ int RunTest(const char* testname,
         DEBUG_PRINT("Test setup:\t'%s'\n", testname);
         testdata = testsetupfn();
     }
-  
+
 
     TimeCache(START_OP);
     testfn(testdata, &retval);
     timeTaken = TimeCache(STOP_OP);
-    
+
     if (retval) {
-        printf("Test passed:\t" GREEN "'%s'" RESET "\t %f sec\n", 
-               testname, timeTaken);
+        TEST_PASSED_PRINT(testname, timeTaken);
     }
-  
+
     if (testcleanupfn) {
         DEBUG_PRINT("Test cleanup:\t'%s'\n", testname);
         testcleanupfn(testdata);
     }
-  
+
     if (retval) {
         DEBUG_PRINT("Successful:\t'%s'\n\n", testname);
     } else {
-        printf("Failed    :\t" RED "'%s'" RESET"\n\n", testname);
+        TEST_FAILED_PRINT(testname);
     }
     return retval;
 }
@@ -353,7 +379,7 @@ int RunTest(const char* testname,
 #define TEST_TRUE(expr) \
 do { \
     if(!(expr)) { \
-        ERROR_PRINT("Condition '%s' failed in file %s at line %d.\n", #expr, __FILE__, __LINE__); \
+        ERROR_PRINT("Condition '%s' failed in file '%s:%d' in function '%s'.\n", #expr, __FILE__, __LINE__, __FUNCTION__); \
         *(TEST_RET_VAL_PTR_NAME) = false; \
     } \
 } while(0)
@@ -376,7 +402,7 @@ do { \
 #define ASSERT_TRUE(expr) \
 do { \
     if(!(expr)) { \
-        ERROR_PRINT("Condition '%s' failed at file %s at line %d.\n", #expr, __FILE__, __LINE__); \
+        ERROR_PRINT("Condition '%s' failed at file '%s:%d' in function '%s'.\n", #expr, __FILE__, __LINE__, __FUNCTION__); \
         fflush(ERR_STRM); \
         exit(1); \
     } \
@@ -480,19 +506,26 @@ extern void SetupTests();
 int main(int argc, const char* argv[]) {
     int allPassed = true;
     int tidx = 0;
+
+#if defined(_WIN32)
+    // Initialize color attributes
+    SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_WHITE);
+    SetConsoleTextAttribute(GetStdHandle(STD_ERROR_HANDLE), FOREGROUND_WHITE);
+#endif
+
     SetupTests();
     ASSERT_TRUE(CURR_TEST_ < MAX_TESTS);
     for(; tidx < CURR_TEST_; ++tidx) {
         /* a test could abort with asserts */
         allPassed &= RunTest(
-                    TESTS_[tidx].test_name_,
-                    TESTS_[tidx].test_setup_,
-                    TESTS_[tidx].test_func_,
-                    TESTS_[tidx].test_clnup_);
+                        TESTS_[tidx].test_name_,
+                        TESTS_[tidx].test_setup_,
+                        TESTS_[tidx].test_func_,
+                        TESTS_[tidx].test_clnup_);
     }
     return allPassed ? 0 : 1;
 }
 
 /* ------------------------------ */
 
-#endif/*CUTILS_UNITTEST_UNITTEST_H*/
+#endif/*PROJ_UNITTEST_UNITTEST_H*/
