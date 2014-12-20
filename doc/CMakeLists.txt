@@ -24,6 +24,6 @@ add_custom_target(doc DEPENDS doc.done)
 
 # html/ <- the trailing slash is important
 file(MAKE_DIRECTORY html)
-install(DIRECTORY html/ DESTINATION doc)
+install(DIRECTORY html/ DESTINATION doc/html)
 
 endif(DOXYGEN_FOUND)

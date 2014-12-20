@@ -1,4 +1,4 @@
-empty-proj 
+[empty-proj](http://aadityakalsi.github.io/empty-proj/) [![Build Status](https://travis-ci.org/aadityakalsi/empty-proj.svg?branch=master)](https://travis-ci.org/aadityakalsi/empty-proj)
 ==========
 
 A simple C/C++ project scaffold. Uses CMake to allow new C and C++ projects to be easily integrated.
@@ -105,4 +105,4 @@ For the CMake module:
  #
 ```
 
-Hunter(http://github.com/ruslo/hunter) can also be used along with ```ProjTools.cmake``` to allow for better 3rd party build management.
+[Hunter](http://github.com/ruslo/hunter) can also be used along with ```ProjTools.cmake``` to allow for better 3rd party build management.

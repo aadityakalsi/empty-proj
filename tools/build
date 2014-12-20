@@ -7,5 +7,5 @@ do
   PARAMS="${PARAMS} \"${PARAM}\""
 done
 
-bash -c "${tools_dir}/regen ${PARAMS}"
+bash -c "${tools_dir}/regen \"${PARAMS}\""
 cmake --build ${tools_dir}/../build --target check --config $1

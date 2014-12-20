@@ -3,7 +3,7 @@
  * A tutorial and test for the unit-test framework
  */
 
-#include <empty-proj/unittest/unittest.h>
+#include "unittest.h"
 
 /* ----------------------------------------------- */
 
@@ -17,8 +17,6 @@ TEST_FUNC( pass_test ) {
     ASSERT_FALSE( 0 );
     ASSERT_TRUE( 1 );
 }
-
-/* ----------------------------------------------- */
 
 TEST_FUNC( fail_test_test_true ) {
     ASSERT_TRUE( *TEST_RET_VAL_PTR_NAME );
@@ -34,18 +32,16 @@ TEST_FUNC( fail_test_test_false ) {
 
 /* ----------------------------------------------- */
 
-
-/* ----------------------------------------------- */
-
 TEST_SETUP( test_case ) {
-    static int bVal = false;
+    static int bVal;
+    bVal = 0;
     return (void*) &bVal;
 }
 
 TEST_FUNC( test_case ) {
     int* data = (int*) testdata;
     ASSERT_FALSE( *data );
-    *data = true;
+    *data = 1;
     TEST_TRUE( *data );
 }
 
@@ -56,9 +52,6 @@ TEST_CLEANUP( test_case ) {
 
 /* ----------------------------------------------- */
 
-
-/* ----------------------------------------------- */
-
 void SetupTests(void) {
     REG_TEST( pass_test );
     REG_TEST( fail_test_test_true );
@@ -66,4 +59,3 @@ void SetupTests(void) {
     REG_TEST_CASE( test_case );
 }
 
-/* ----------------------------------------------- */

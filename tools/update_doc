@@ -29,6 +29,6 @@ mkdir -p ${proj_dir}/doc/html
 cp -rf ${proj_dir}/build/doc/html/* ${proj_dir}/doc/html
 
 # Add to git
-git add ${proj_dir}/doc/html/*
+# git add ${proj_dir}/doc/html/*
 
 cd ${olddir}

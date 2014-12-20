@@ -1,7 +1,15 @@
 #!/bin/bash
 
+if [ $# -ne 2 ];
+then
+  echo "Usage:"
+  echo "  createhdr path_to_hdr_file include_guard"
+  exit 1
+fi
+
 echo "/**" > $1
-echo " * @file: `basename $1`" >> $1
+echo " * \file `basename $1`" >> $1
+echo " * \date `date +%Y`" >> $1
 echo " */" >> $1
 echo "" >> $1
 echo "#ifndef $2" >> $1

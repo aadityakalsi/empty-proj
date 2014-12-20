@@ -1,35 +1,74 @@
 # ProjTools.cmake
 # ---------------
-#
+# 
 # CMake module that is meant as a single include in your top level
 # CMakeLists.txt.
-#
+# 
 # Before including this module, the following definitions need to
 # be in place in your main CMakeLists.txt file.
-#
-# # Sample CMakeLists.txt
-#
-# cmake_minimum_required(VERSION 2.8)
-#
-# set(PROJ_NAME <your_project_name>)
-# project(${PROJ_NAME})
-# set(PROJ_INSTALL_DIR <install_location>)
-# set(CPACK_PACKAGE_VERSION "0.1.1")
-# set(CPACK_PACKAGE_VERSION_MAJOR "0")
-# set(CPACK_PACKAGE_VERSION_MINOR "1")
-# set(CPACK_PACKAGE_VERSION_PATCH "1")
-# set(CPACK_PACKAGE_CONTACT <your_email>)
 # 
-# set(license_file <license_file>)
-# set(readme_file  <readme_file>)
+# Project structure:
+# 
+# + project
+# |
+# |- CMakeLists.txt
+# |- LICENSE.txt
+# |- README.txt
+# |+ cmake
+# |+ module1
+# |+ module2
+# |...
+# |+ unittest (Unittest header available for writing unittests)
+# |
+# 
+# Sample CMakeLists.txt file:
+# 
+# # CMakeLists.txt
+# #
+# # # -- This cmake file works only wth CMake >= 2.8
+# # cmake_minimum_required(VERSION 2.8)
+# #
+# # # -- Set the project versioning details
+# # set(PROJ_NAME <your_project_name>)
+# # project(${PROJ_NAME})
+# # set(PROJ_INSTALL_DIR <install_location>)
+# # set(CPACK_PACKAGE_VERSION "0.1.1")
+# # set(CPACK_PACKAGE_VERSION_MAJOR "0")
+# # set(CPACK_PACKAGE_VERSION_MINOR "1"))
+# # set(CPACK_PACKAGE_VERSION_PATCH "1")
+# # set(CPACK_PACKAGE_CONTACT <your_email>)
+# #
+# # # -- Set the license and readme file for your project
+# # set(license_file <license_file>)
+# # set(readme_file  <readme_file>)
 #
-# set(BUILD_DEFINE <proj>_BUILDING)
-#
-# # -- Include this module
-# set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-# include(ProjTools)
-#
-# # -- Add targets below
+# # # -- Include this module
+# # set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+# # set(USE_CPP )
+# # # -- Can also set USE_CPP11
+# #
+# # # -- Finally include this magic CMake file
+# # include(ProjTools)
+# #
+# # # -- Add targets below
+# # add_subdirectory(module1; module2)
+# #
+# # # -- Functions available
+# # add_inc_dir()
+# # add_exe()
+# # add_lib()
+# # add_lib_build_def()
+# # link_libs()
+# # set_tgt_ver()
+# # install_hdr()
+# # install_tgt()
+# # 
+# # # -- Functions available for tests
+# # In tests, you should use:
+# # add_test_exe()
+# # test_link_libs()
+# # create_test()
+# #
 #
 
 cmake_minimum_required(VERSION 2.8)
@@ -45,6 +84,47 @@ if(NOT CMAKE_BUILD_TYPE)
         "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
 	 FORCE)
 endif(NOT CMAKE_BUILD_TYPE)
+
+string(COMPARE EQUAL ${CMAKE_C_COMPILER_ID} "MSVC" is_msvc)
+if(is_msvc)
+  set(USING_MSVC TRUE CACHE STRING "Using MSVC")
+  if(PROJ_USE_LTO)
+    set(CMAKE_C_FLAGS_RELEASE
+      "${CMAKE_C_FLAGS_RELEASE} /Ob2 /GL")
+    set(CMAKE_CXX_FLAGS_RELEASE
+      "${CMAKE_CXX_FLAGS_RELEASE} /Ob2 /GL")
+    set(CMAKE_EXE_LINKER_FLAGS_RELEASE
+      "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /LTCG /INCREMENTAL:NO /OPT:REF")
+    set(CMAKE_MODULE_LINKER_FLAGS_RELEASE
+      "${CMAKE_MODULE_LINKER_FLAGS_RELEASE} /LTCG /INCREMENTAL:NO /OPT:REF")
+    set(CMAKE_SHARED_LINKER_FLAGS_RELEASE
+      "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /LTCG /INCREMENTAL:NO /OPT:REF")
+    set(STATIC_LIBRARY_FLAGS_RELEASE
+      "${STATIC_LIBRARY_FLAGS_RELEASE} /LTCG /INCREMENTAL:NO /OPT:REF")
+  endif()
+else()#GCC like compiler
+  if(PROJ_USE_LTO)
+    set(CMAKE_C_FLAGS_RELEASE
+      "${CMAKE_C_FLAGS_RELEASE} -flto")
+    set(CMAKE_CXX_FLAGS_RELEASE
+      "${CMAKE_CXX_FLAGS_RELEASE} -flto")
+    set(CMAKE_EXE_LINKER_FLAGS_RELEASE
+      "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -flto")
+    set(CMAKE_MODULE_LINKER_FLAGS_RELEASE
+      "${CMAKE_MODULE_LINKER_FLAGS_RELEASE} -flto")
+    set(CMAKE_SHARED_LINKER_FLAGS_RELEASE
+      "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} -flto")
+    set(STATIC_LIBRARY_FLAGS_RELEASE
+      "${STATIC_LIBRARY_FLAGS_RELEASE} -flto")
+  endif()
+endif()
+
+if(CMAKE_C_COMPILER_ID MATCHES "Clang")
+  set(USING_CLANG TRUE CACHE STRING "Using Clang")
+  if(CMAKE_C_COMPILER_ID MATCHES "Apple")
+    set(USING_APPLE_CLANG TRUE CACHE STRING "Using AppleClang")
+  endif()
+endif()
 
 # -- Get the folder containing the project
 get_filename_component(PROJ_BASE_DIR_TMP ${CMAKE_CURRENT_SOURCE_DIR} PATH)
@@ -73,20 +153,8 @@ if (UNIX)
   endif()
 endif(UNIX)
 
+# -- For Windows, add the required system libraries
 include(InstallRequiredSystemLibraries)
-
-# -- Add BUILD_DEFINE flag for import/export sym
-if (BUILD_DEFINE)
-  add_definitions(-D ${BUILD_DEFINE})
-endif()
-
-# -- Add warning flags
-# * Error on warnings, and enable all
-if(WIN32)
-  add_definitions(/W3 /WX)
-else()
-  add_definitions(-std=c99 -Wall -Werror)
-endif(WIN32)
 
 # -- Set up temp dir
 set(TMPDIR ${CMAKE_BINARY_DIR}/temp CACHE INTERNAL "Temp dir" FORCE)
@@ -110,15 +178,63 @@ endif(WIN32)
 
 include(CPack)
 
+# -- Add C++ and C++11 flags and C99 flags
+if (NOT WIN32)
+  if (USE_CPP)
+    if (USE_CPP11)
+      set(STD_CPPVER_FLAG -std=c++11)
+    else()
+      set(STD_CPPVER_FLAG -std=c++03)
+    endif(USE_CPP11)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${STD_CPPVER_FLAG}")
+  endif(USE_CPP)
+
+  set(STD_CVER_FLAG -std=c99)
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
+endif(NOT WIN32)
+
 # -- Code coverage defines
 if ((UNIX OR APPLE) AND (CMAKE_BUILD_TYPE STREQUAL "Debug"))
   set(USE_CODE_COV 1)
-  add_definitions("-O0 -fprofile-arcs -ftest-coverage")
-  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fprofile-arcs -ftest-coverage")
   file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/coverage)
 else()
   set(USE_CODE_COV 0)
 endif()
+
+# -- For debug with lcov, we skip -Wl,-no-undefined
+if((NOT USE_CODE_COV) AND (NOT WIN32))
+  if(USING_APPLE_CLANG)
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-undefined,error")
+  else()#GCC like compiler
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--no-undefined")
+  endif()
+endif()
+
+# -- add_comp_flag: Add compile flag to target
+function(add_comp_flag tgt def)
+  target_compile_options(${tgt} PUBLIC ${def})
+endfunction(add_comp_flag)
+
+# -- add_comp_def: Add compile definitions
+function(add_comp_def tgt def)
+  get_target_property(compile_defs ${tgt} COMPILE_DEFINITIONS)
+  if(compile_defs)
+    set(compile_defs "${compile_defs} ${def}")  
+  else()
+    set(compile_defs ${def})
+  endif(compile_defs)
+  set_target_properties(${tgt} PROPERTIES COMPILE_DEFINITIONS ${compile_defs})
+endfunction(add_comp_def)
+
+# -- add_link_flag: Add link flag to target
+function(add_link_flag tgt flag)
+    set(new_flags ${flag})
+    get_target_property(curr_flags ${tgt} LINK_FLAGS)
+    if(curr_flags)
+      set(new_flags "${curr_flags} ${new_flags}")
+    endif(curr_flags)
+    set_property(TARGET ${tgt} PROPERTY LINK_FLAGS ${new_flags})
+endfunction(add_link_flag)
 
 # -- add_inc_dir: Add include dir to target (include_directories, but target specific!)
 function(add_inc_dir tgt dir)
@@ -127,34 +243,99 @@ function(add_inc_dir tgt dir)
     if(curr_inc_dir)
       set(new_inc_dir ${curr_inc_dir};${new_inc_dir})
     endif(curr_inc_dir)
-	set_property(TARGET ${tgt} PROPERTY INCLUDE_DIRECTORIES ${new_inc_dir})
+    set_property(TARGET ${tgt} PROPERTY INCLUDE_DIRECTORIES ${new_inc_dir})
 endfunction(add_inc_dir)
 
 # -- add_exe: Add executable target (add_executable mimic)
 function(add_exe tgt)
   add_executable(${ARGV})
   add_inc_dir(${tgt} ${PROJ_BASE_DIR})
+
+# -- Add warning flags
+# --- Error on warnings, and enable all
+if(USING_MSVC)
+  add_comp_flag(${tgt} /W3)
+  add_comp_flag(${tgt} /WX)
+else()
+  add_comp_flag(${tgt} -Wall)
+  add_comp_flag(${tgt} -Werror)
+  add_comp_flag(${tgt} -ffunction-sections)
+  add_comp_flag(${tgt} -fdata-sections)
+endif(USING_MSVC)
+
+# -- Change default visibility on UNIX
+if(NOT WIN32)
+  add_comp_flag(${tgt} -fvisibility=hidden)
+endif(NOT WIN32)
+
+if(USE_CODE_COV)
+  add_comp_flag(${tgt} -O0)
+  add_comp_flag(${tgt} -fprofile-arcs)
+  add_comp_flag(${tgt} -ftest-coverage)
+  add_link_flag(${tgt} -fprofile-arcs)
+  add_link_flag(${tgt} -ftest-coverage)
+endif(USE_CODE_COV)
+
 endfunction(add_exe)
 
-# -- link_libs: Link to libraries (add_library mimic)
+# -- add_lib: Add library target (add_library mimic)
+function(add_lib tgt)
+  add_library(${ARGV})
+  add_inc_dir(${tgt} ${PROJ_BASE_DIR})
+
+# -- Add warning flags
+# --- Error on warnings, and enable all
+if(USING_MSVC)
+  add_comp_flag(${tgt} /W3)
+  add_comp_flag(${tgt} /WX)
+else()
+  add_comp_flag(${tgt} -Wall)
+  add_comp_flag(${tgt} -Werror)
+  add_comp_flag(${tgt} -ffunction-sections)
+  add_comp_flag(${tgt} -fdata-sections)
+endif(USING_MSVC)
+
+# -- Change default visibility on UNIX
+if(NOT WIN32)
+  add_comp_flag(${tgt} -fvisibility=hidden)
+endif(NOT WIN32)
+
+if(USE_CODE_COV)
+  add_comp_flag(${tgt} -O0)
+  add_comp_flag(${tgt} -fprofile-arcs)
+  add_comp_flag(${tgt} -ftest-coverage)
+  add_link_flag(${tgt} -ftest-coverage)
+endif(USE_CODE_COV)
+
+endfunction(add_lib)
+
+# -- add_lib_build_def: Add library target (add_library mimic)
+function(add_lib_build_def tgt buildSym)
+  add_comp_def(${tgt} ${buildSym})
+endfunction(add_lib_build_def)
+
+# -- link_libs: Link to libraries (target_link_libraries mimic)
 function(link_libs tgt)
     set(xtra_libs )
 	
 if (USE_CODE_COV)
   if (APPLE)
-    set(new_link_flags "--coverage")
-    get_target_property(existing_link_flags ${tgt} LINK_FLAGS)
-    if(existing_link_flags)
-        set(new_link_flags "${existing_link_flags} ${new_link_flags}")
-    endif()
-    set_target_properties(${tgt} PROPERTIES LINK_FLAGS ${new_link_flags})
+    add_link_flag(${tgt} --coverage)
   else()#UNIX
     set(xtra_libs gcov)
   endif()
 endif()
 
+if((NOT WIN32) AND (NOT USE_CODE_COV))
+  if(USING_APPLE_CLANG)
+    add_link_flag(${tgt} -dead_strip)
+  else()#GCC like compiler
+    add_link_flag(${tgt} -Wl,--gc-sections)
+    add_link_flag(${tgt} -Wl,--as-needed)
+  endif()
+endif()
+
   target_link_libraries(${ARGV} ${xtra_libs})
-  add_inc_dir(${tgt} ${PROJ_BASE_DIR})
 endfunction(link_libs)
 
 # -- set_tgt_ver: Set target version
@@ -174,12 +355,7 @@ function(link_libs_install tgt)
 	
 if (USE_CODE_COV)
   if (APPLE)
-    set(new_link_flags "--coverage")
-    get_target_property(existing_link_flags ${tgt} LINK_FLAGS)
-    if(existing_link_flags)
-        set(new_link_flags "${existing_link_flags} ${new_link_flags}")
-    endif()
-    set_target_properties(${tgt} PROPERTIES LINK_FLAGS ${new_link_flags})
+    add_link_flag(${tgt} --coverage)
   else()#UNIX
     set(xtra_libs gcov)
   endif()
@@ -192,7 +368,10 @@ endfunction(link_libs_install)
 # -- install_hdr: Install headers function
 function(install_hdr)
   string(REGEX REPLACE "${CMAKE_SOURCE_DIR}" "${PROJ_INSTALL_INC_DIR}" relpath ${CMAKE_CURRENT_SOURCE_DIR})
-  install(FILES ${ARGV} DESTINATION ${relpath})
+  foreach(file ${ARGV})
+    get_filename_component(parent_dir ${file} DIRECTORY)
+    install(FILES ${file} DESTINATION ${relpath}/${parent_dir})
+  endforeach()
 endfunction(install_hdr)
 
 # -- install_tgt: Install target function
@@ -226,23 +405,29 @@ add_custom_target(check_on_install)
 # -- add_hdrs_ide: Add headers to IDE
 function(add_hdrs_ide)
   get_filename_component(submod_name ${CMAKE_CURRENT_SOURCE_DIR} NAME)
-  add_custom_target("${submod_name}.src" ALL SOURCES ${ARGN})
+  add_custom_target("${submod_name}.hdr" ALL SOURCES ${ARGN})
 endfunction(add_hdrs_ide)
+
+# -- add_hdrs_tgt_ide: Add headers to IDE
+function(add_hdrs_tgt_ide tgt_name)
+  add_custom_target("${tgt_name}.hdr" ALL SOURCES ${ARGN})
+endfunction(add_hdrs_tgt_ide)
 
 # -- add_test_exe: Add test executable
 function(add_test_exe testname filename)
   ## deal with normal test
-  include_directories(${PROJ_BASE_DIR})
   add_exe(${ARGV})
   
   # On Windows, the custom build detects the "ERROR" word in the
   # output and fails a passing test. We simply detect on the executable's
   # return code to detect failure.
-  if((WIN32) AND (${testname} STREQUAL "test_unittest"))
+  if(USING_MSVC AND ((${testname} STREQUAL "test_unittest") OR (${testname} STREQUAL "test_cppunittest")))
     add_custom_command(TARGET ${testname} POST_BUILD COMMAND ${testname} 2>nul)
   else()
     add_custom_command(TARGET ${testname} POST_BUILD COMMAND ${testname})
   endif()
+
+  add_inc_dir(${testname} ${CMAKE_SOURCE_DIR}/unittest)
 
   add_dependencies(check ${testname})
 
@@ -277,9 +462,11 @@ function(add_test_exe testname filename)
     file(APPEND ${test_dirname}/CMakeLists.txt
       "endif()\n")
     file(APPEND ${test_dirname}/CMakeLists.txt
-      "add_executable(${install_test_args} ${CMAKE_SOURCE_DIR}/unittest/unittest.h)\n")
+      "add_executable(${install_test_args})\n")
     file(APPEND ${test_dirname}/CMakeLists.txt
       "add_dependencies(${testname}_install install_for_check_done)\n")
+    file(APPEND ${test_dirname}/CMakeLists.txt
+      "add_inc_dir(${testname}_install ${CMAKE_SOURCE_DIR}/unittest)\n")
   endif()
 endfunction(add_test_exe)
 
@@ -308,7 +495,7 @@ function(create_test testname)
     # On Windows, the custom build detects the "ERROR" word in the
     # output and fails a passing test. We simply detect on the executable's
     # return code to detect failure.
-    if((WIN32) AND (${testname} STREQUAL "test_unittest"))
+    if(USING_MSVC AND ((${testname} STREQUAL "test_unittest") OR (${testname} STREQUAL "test_cppunittest")))
       set(xtra_args "2>nul")
     else()
       set(xtra_args "")
@@ -338,18 +525,13 @@ endfunction(create_test)
 
 # -- GENERATE CODE COVERAGE REPORT
   if(USE_CODE_COV)
-    if (APPLE)
-      set(browser_cmd "open")
-    else()
-      set(browser_cmd "firefox")
-    endif()
     if (WIN32)
       set(cd_cmd "cd /d")
     else()
       set(cd_cmd "cd")
     endif()
     
-    include(CodeCoverage)
+    include("cmake/CodeCoverage.cmake")
     
     add_custom_target(check.cov.gen ALL)
     add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/check
@@ -364,6 +546,6 @@ endfunction(create_test)
     add_dependencies(check.cov check.cov.gen.done)
     add_custom_target(check.cov.done DEPENDS check.cov)
     add_custom_command(TARGET check.cov.done
-        POST_BUILD COMMAND ${browser_cmd} coverage/index.html)
+        POST_BUILD COMMAND echo "View the report: `pwd`/coverage/index.html")
     add_custom_target(code_cov DEPENDS check.cov.done)
   endif()

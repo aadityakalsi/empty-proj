@@ -51,8 +51,9 @@ ENDIF() # NOT GCOV_PATH
 IF(NOT CMAKE_COMPILER_IS_GNUCXX)
     # Clang version 3.0.0 and greater now supports gcov as well.
     #MESSAGE(WARNING "Compiler is not GNU gcc! Clang Version 3.0.0 and greater supports gcov as well, but older versions don't.")
-    
-    IF(NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    MESSAGE("CompilerID: ${CMAKE_CXX_COMPILER_ID}")
+    IF(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    ELSE()
         MESSAGE(FATAL_ERROR "Compiler is not GNU gcc! Aborting...")
     ENDIF()
 ENDIF() # NOT CMAKE_COMPILER_IS_GNUCXX

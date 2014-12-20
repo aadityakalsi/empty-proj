@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+if [ $# -ne 1 ]
+then
+  echo "Usage:"
+  echo "  clone <base_dir>"
+  exit 1
+fi
+
+proj_dir=$(cd "$(dirname "$0")"; pwd)
+
+new_proj_dir=`basename $1`
+new_proj_base_dir=`dirname $1`
+new_path="${new_proj_base_dir}/${new_proj_dir}"
+
+echo "Removing $1 ..."
+rm -fr $1
+
+echo "Making directory ${new_proj_dir}"
+mkdir -p $1
+
+echo "Cloning..."
+cp -rf ${proj_dir}/* $1
+
+# remove unwanted files
+rm ${new_path}/clone
+rm ${new_path}/CMakeLists.txt
+rm ${new_path}/README.txt
+rm ${new_path}/.travis.yml
+rm ${new_path}/appveyor.yml
+
+echo "<fill readme>" > ${new_path}/README.txt
+
+replace_patt="s/empty-proj/${new_proj_dir}/g"
+
+(cat ${proj_dir}/CMakeLists.txt | sed ${replace_patt}) > ${new_path}/CMakeLists.txt

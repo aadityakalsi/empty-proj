@@ -23,21 +23,11 @@ set(CPACK_PACKAGE_CONTACT )
 set(license_file LICENSE.txt)
 set(readme_file  README.txt)
 
-# -- Define to use when building project
-set(BUILD_DEFINE )
-
 # -- Include the tests in the bin folder?
 set(INCLUDE_TEST_IN_BIN FALSE)
 
-# -- Include the cmake modules
-if(CMAKE_MODULE_PATH)
-  set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake")
-else()
-  set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
-endif()
-
 # -- Include the magic ProjTools
-include(ProjTools)
+include("cmake/ProjTools.cmake")
 
 # -- Add the subdirectories
 set(PROJ_SUBDIRS  unittest; doc; tools)

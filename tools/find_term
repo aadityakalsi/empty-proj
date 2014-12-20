@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 tools_dir=$(cd "$(dirname "$0")"; pwd)
 proj_dir=`dirname ${tools_dir}`
-grep -r $1 `pwd` --exclude-dir build --exclude-dir doc --exclude-dir .git
+grep -r $1 `pwd` --exclude-dir build --exclude-dir doc --exclude-dir .git --color=auto
 

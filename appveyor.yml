@@ -1,0 +1,28 @@
+# branches to build
+branches:
+  # whitelist
+  only:
+    - master
+
+environment:
+  PROJ: "c:/projects/empty-proj"
+
+platform:
+  - x86
+
+configuration:
+  - Debug
+  - Release
+
+build:
+  # path to Visual Studio solution or project
+  project: c:/projects/empty-proj/build/INSTALL.vcxproj
+
+# scripts to run before build
+before_build:
+  - echo Running cmake...
+  - cd /d %PROJ%
+  - mkdir build
+  - cd build
+  - cmake -G "Visual Studio 12" ..
+  - dir .

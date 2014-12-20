@@ -1,6 +1,14 @@
 #!/bin/bash
 
+if [ $# -ne 1 ];
+then
+  echo "Usage:"
+  echo "  createsrc path_to_src"
+  exit 1
+fi
+
 echo "/**" > $1
-echo " * @file: `basename $1`" >> $1
+echo " * \file `basename $1`" >> $1
+echo " * \date `date +%Y`" >> $1
 echo " */" >> $1
 echo "" >> $1

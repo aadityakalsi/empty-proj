@@ -4,7 +4,8 @@ PROJECT_NAME             = @PROJ_NAME@
 OPTIMIZE_OUTPUT_FOR_C    = YES
 
 INPUT =  @CMAKE_CURRENT_SOURCE_DIR@ \
-         @CMAKE_CURRENT_SOURCE_DIR@/../unittest
+         # Uncomment to include unittest in doc
+         # @CMAKE_CURRENT_SOURCE_DIR@/../unittest
 
 
 ENABLE_PREPROCESSING     = YES
