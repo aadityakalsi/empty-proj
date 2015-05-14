@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+
+    <title>empty-proj by aadityakalsi</title>
+  </head>
+
+  <body>
+
+    <header>
+      <div class="container">
+        <h1>empty-proj</h1>
+        <h2>Empty project to clone for new C/C++ libraries.</h2>
+
+        <section id="downloads">
+          <a href="https://github.com/aadityakalsi/empty-proj/zipball/master" class="btn">Download as .zip</a>
+          <a href="https://github.com/aadityakalsi/empty-proj/tarball/master" class="btn">Download as .tar.gz</a>
+          <a href="https://github.com/aadityakalsi/empty-proj" class="btn btn-github"><span class="icon"></span>View on GitHub</a>
+        </section>
+      </div>
+    </header>
+
+    <div class="container">
+      <section id="main_content">
+        <h1>
+<a id="empty-proj-" class="anchor" href="#empty-proj-" aria-hidden="true"><span class="octicon octicon-link"></span></a>empty-proj <a href="https://travis-ci.org/aadityakalsi/empty-proj"><img src="https://travis-ci.org/aadityakalsi/empty-proj.svg?branch=master" alt="Build Status"></a>
+</h1>
+
+<p>A simple C/C++ project scaffold. Uses CMake to allow new C and C++ projects to be easily integrated.</p>
+
+<p>Comes built-in with support for:</p>
+
+<ul>
+<li>Unittest support for all platforms</li>
+<li>Code coverage on *NIX using <code>lcov</code>. Can be installed using <code>sudo apt-get install lcov</code> or <code>brew install lcov</code>
+</li>
+<li>Supports doxygen generation via the <code>doc/</code> directory.</li>
+<li>
+<a href="http://github.com/ruslo/hunter">Hunter</a> can also be used along with <code>cmake/ProjTools.cmake</code> to allow for better 3rd party build management.</li>
+</ul>
+
+<p>To use this repo:</p>
+
+<pre><code>git clone https://github.com/aadityakalsi/empty-proj
+</code></pre>
+
+<p>To create a new C or C++ project, call <code>clone</code>.</p>
+
+<pre><code>empty-proj/clone myNewProject
+</code></pre>
+
+<p>Then:</p>
+
+<pre><code>cd myNewProject
+tools/build [Debug/Release]
+tools/codecov
+tools/install
+</code></pre>
+
+<p>For the CMake module:</p>
+
+<pre><code> ProjTools.cmake
+ ---------------
+
+ CMake module that is meant as a single include in your op level
+ CMakeLists.txt.
+
+ Before including this module, the following efinitions need to
+ be in place in your main CMakeLists.txt file.
+
+ Project structure:
+
+ + project
+ |
+ |- CMakeLists.txt
+ |- LICENSE.txt
+ |- README.txt
+ |+ cmake
+ |+ module1
+ |+ module2
+ |...
+ |+ unittest (Unittest header available for writing nittests)
+ |
+
+ Sample CMakeLists.txt file:
+
+ # CMakeLists.txt
+ #
+ # # -- This cmake file works only wth CMake &gt;= 2.8
+ # cmake_minimum_required(VERSION 2.8)
+ #
+ # # -- Set the project versioning details
+ # set(PROJ_NAME &lt;your_project_name&gt;)
+ # project(${PROJ_NAME})
+ # set(PROJ_INSTALL_DIR &lt;install_location&gt;)
+ # set(CPACK_PACKAGE_VERSION "0.1.1")
+ # set(CPACK_PACKAGE_VERSION_MAJOR "0")
+ # set(CPACK_PACKAGE_VERSION_MINOR "1"))
+ # set(CPACK_PACKAGE_VERSION_PATCH "1")
+ # set(CPACK_PACKAGE_CONTACT &lt;your_email&gt;)
+ #
+ # # -- Set the license and readme file for your project
+ # set(license_file &lt;license_file&gt;)
+ # set(readme_file  &lt;readme_file&gt;)
+
+ # # -- Include this module
+ # set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} {CMAKE_CURRENT_SOURCE_DIR}/cmake)
+ # set(USE_CPP )
+ # # -- Can also set USE_CPP11
+ #
+ # # -- Finally include this magic CMake file
+ # include(ProjTools)
+ #
+ # # -- Add targets below
+ # add_subdirectory(module1; module2)
+ #
+ # # -- Functions available
+ # add_inc_dir()
+ # add_exe()
+ # add_lib()
+ # add_lib_build_def()
+ # link_libs()
+ # set_tgt_ver()
+ # install_hdr()
+ # install_tgt()
+ # 
+ # # -- Functions available for tests
+ # In tests, you should use:
+ # add_test_exe()
+ # test_link_libs()
+ # create_test()
+ #
+</code></pre>
+      </section>
+    </div>
+
+    
+  </body>
+</html>
