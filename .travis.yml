@@ -31,7 +31,7 @@ script:
   - echo y | tools/build $BTYPE
 
 after_success:
-  - if [ ${BTYPE} = "Release" ]; then tools/install Release; fi
+  - if [ ${BTYPE} = "Release" ]; then tools/test_on_install Release; fi
 
 notifications:
   email:
