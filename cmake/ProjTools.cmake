@@ -428,7 +428,7 @@ function(add_test_exe testname filename)
   endif()
 
   add_inc_dir(${testname} ${CMAKE_SOURCE_DIR}/unittest)
-
+  add_test(${testname} ${testname})
   add_dependencies(check ${testname})
 
   # deal with test on install
