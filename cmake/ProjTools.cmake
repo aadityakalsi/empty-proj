@@ -309,9 +309,9 @@ endif(USE_CODE_COV)
 
 endfunction(add_lib)
 
-# -- add_lib_build_def: Add library target (add_library mimic)
+# -- add_lib_build_def: Add library compile definition
 function(add_lib_build_def tgt buildSym)
-  add_comp_def(${tgt} ${buildSym})
+  target_compile_definitions(${tgt} PUBLIC ${buildSym})
 endfunction(add_lib_build_def)
 
 # -- link_libs: Link to libraries (target_link_libraries mimic)
