@@ -20,8 +20,8 @@ set(CPACK_PACKAGE_VERSION_MINOR "1")
 set(CPACK_PACKAGE_VERSION_PATCH "1")
 set(CPACK_PACKAGE_CONTACT )
 
-set(license_file LICENSE.txt)
-set(readme_file  README.txt)
+set(PROJ_LICENSE_FILE LICENSE.txt)
+set(PROJ_README_FILE  README.txt)
 
 # -- Include the tests in the bin folder?
 set(INCLUDE_TEST_IN_BIN FALSE)

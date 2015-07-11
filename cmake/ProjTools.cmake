@@ -25,8 +25,8 @@
 # 
 # # CMakeLists.txt
 # #
-# # # -- This cmake file works only wth CMake >= 2.8
-# # cmake_minimum_required(VERSION 2.8)
+# # # -- This cmake file works only wth CMake >= 3.0
+# # cmake_minimum_required(VERSION 3.0)
 # #
 # # # -- Set the project versioning details
 # # set(PROJ_NAME <your_project_name>)
@@ -39,8 +39,8 @@
 # # set(CPACK_PACKAGE_CONTACT <your_email>)
 # #
 # # # -- Set the license and readme file for your project
-# # set(license_file <license_file>)
-# # set(readme_file  <readme_file>)
+# # set(PROJ_LICENSE_FILE <PROJ_LICENSE_FILE>)
+# # set(PROJ_README_FILE  <PROJ_README_FILE>)
 #
 # # # -- Include this module
 # # set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
@@ -71,7 +71,7 @@
 # #
 #
 
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.0)
 
 # -- Force the build type to ensure this works on Windows
 if(NOT CMAKE_BUILD_TYPE)
@@ -121,7 +121,7 @@ endif()
 
 if(CMAKE_C_COMPILER_ID MATCHES "Clang")
   set(USING_CLANG TRUE CACHE STRING "Using Clang")
-  if(CMAKE_C_COMPILER_ID MATCHES "Apple")
+  if(APPLE)
     set(USING_APPLE_CLANG TRUE CACHE STRING "Using AppleClang")
   endif()
 endif()
@@ -164,12 +164,12 @@ if(NOT EXISTS "${TMPDIR}")
 endif()
 
 # --- INSTALLATION
-install(FILES ${license_file} ${readme_file} DESTINATION .)
+install(FILES ${PROJ_LICENSE_FILE} ${PROJ_README_FILE} DESTINATION .)
 
 # --- PACKAGING
 # include CPack for packagaing
-set(CPACK_RESOURCE_FILE_LICENSE ${CMAKE_SOURCE_DIR}/${license_file})
-set(CPACK_RESOURCE_FILE_README  ${CMAKE_SOURCE_DIR}/${readme_file})
+set(CPACK_RESOURCE_FILE_LICENSE ${CMAKE_SOURCE_DIR}/${PROJ_LICENSE_FILE})
+set(CPACK_RESOURCE_FILE_README  ${CMAKE_SOURCE_DIR}/${PROJ_README_FILE})
 
 # On Windows, the package install name must be set
 if (WIN32)
@@ -190,7 +190,7 @@ if (NOT WIN32)
   endif(USE_CPP)
 
   set(STD_CVER_FLAG -std=c99)
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${STD_CVER_FLAG}")
 endif(NOT WIN32)
 
 # -- Code coverage defines

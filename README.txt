@@ -73,8 +73,8 @@ For the CMake module:
  # set(CPACK_PACKAGE_CONTACT <your_email>)
  #
  # # -- Set the license and readme file for your project
- # set(license_file <license_file>)
- # set(readme_file  <readme_file>)
+ # set(PROJ_LICENSE_FILE <PROJ_LICENSE_FILE>)
+ # set(PROJ_README_FILE  <PROJ_README_FILE>)
 
  # # -- Include this module
  # set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} {CMAKE_CURRENT_SOURCE_DIR}/cmake)
