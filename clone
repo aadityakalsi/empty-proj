@@ -20,17 +20,23 @@ echo "Making directory ${new_proj_dir}"
 mkdir -p $1
 
 echo "Cloning..."
-cp -rf ${proj_dir}/* $1
+cp -rf ${proj_dir}/* ${new_path}
 
 # remove unwanted files
 rm ${new_path}/clone
 rm ${new_path}/CMakeLists.txt
 rm ${new_path}/README.txt
-rm ${new_path}/.travis.yml
+rm ${new_path}/README.md
 rm ${new_path}/appveyor.yml
+rm ${new_path}/unittest/test/CMakeLists.txt
 
 echo "<fill readme>" > ${new_path}/README.txt
 
 replace_patt="s/empty-proj/${new_proj_dir}/g"
 
 (cat ${proj_dir}/CMakeLists.txt | sed ${replace_patt}) > ${new_path}/CMakeLists.txt
+(cat ${proj_dir}/appveyor.yml   | sed ${replace_patt}) > ${new_path}/appveyor.yml
+(cat ${proj_dir}/.travis.yml    | sed -n '/notifications:/q;p') > ${new_path}/.travis.yml
+
+firstline=`head -n 1 ${proj_dir}/unittest/test/CMakeLists.txt`
+echo ${firstline} > ${new_path}/unittest/test/CMakeLists.txt
