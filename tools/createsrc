@@ -23,7 +23,7 @@ echo "/*" >> $1
 echo "${lic}" >> $1
 echo "*/" >> $1
 echo "" >> $1
-echo "/**" > $1
+echo "/**" >> $1
 echo " * \file `basename $1`" >> $1
 echo " * \date `date +%Y`" >> $1
 echo " */" >> $1
