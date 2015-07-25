@@ -10,7 +10,6 @@ cd ${proj_dir}
 dir=$1
 
 mkdir -p $dir
-mkdir -p $dir/test
 
 echo \
 "
@@ -26,20 +25,7 @@ install_hdr(\${${dir}_hdrs})
 
 add_hdrs_ide(\${${dir}_hdrs})
 
-# -- Add tests subfolder
-add_subdirectory(test)
-
 " > ${dir}/CMakeLists.txt
-
-echo \
-"
-# TEST: proj $dir sub module
-
-# add_test_exe    (test_name test_cppfile.c)
-# test_link_libs  (test_name )
-# create_test     (test_name)
-
-" > ${dir}/test/CMakeLists.txt
 
 echo " NOTE: Remember to add the new subdirectory in the parent CMakeLists.txt."
 echo " NOTE: Remember to add the new subdirectory to the doc/Doxyfile.in."

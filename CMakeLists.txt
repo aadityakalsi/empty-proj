@@ -30,7 +30,7 @@ set(INCLUDE_TEST_IN_BIN FALSE)
 include("cmake/ProjTools.cmake")
 
 # -- Add the subdirectories
-set(PROJ_SUBDIRS  unittest; doc; tools)
+set(PROJ_SUBDIRS  unittest; doc; tools; test)
 
 # add all subdirs
 foreach(subdir ${PROJ_SUBDIRS})
