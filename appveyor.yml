@@ -9,6 +9,7 @@ environment:
 
 platform:
   - x86
+  - x64
 
 configuration:
   - Debug
@@ -24,4 +25,5 @@ before_build:
   - cd /d %PROJ%
   - mkdir build
   - cd build
-  - cmake -G "Visual Studio 12" ..
+  - cmd: if "%platform%"=="x86" cmake -G"Visual Studio 12"  ..
+  - cmd: if "%platform%"=="x64" cmake -G"Visual Studio 12 Win64" ..
