@@ -7,7 +7,23 @@ then
   exit 1
 fi
 
-echo "/**" > $1
+tools_dir=$(cd "$(dirname "$0")"; pwd)
+proj_dir=`dirname ${tools_dir}`
+
+lic=$(cat $(${proj_dir}/tools/findlicense))
+
+if [ -e $1 ]
+then
+    rm $1
+fi
+
+touch $1
+
+echo "/*" >> $1
+echo "${lic}" >> $1
+echo "*/" >> $1
+echo "" >> $1
+echo "/**" >> $1
 echo " * \file `basename $1`" >> $1
 echo " * \date `date +%Y`" >> $1
 echo " */" >> $1

@@ -29,6 +29,7 @@ rm ${new_path}/README.txt
 rm ${new_path}/README.md
 rm ${new_path}/appveyor.yml
 rm ${new_path}/unittest/test/CMakeLists.txt
+rm -fr ${new_path}/build
 
 echo "<fill readme>" > ${new_path}/README.txt
 
@@ -40,3 +41,8 @@ replace_patt="s/empty-proj/${new_proj_dir}/g"
 
 firstline=`head -n 1 ${proj_dir}/unittest/test/CMakeLists.txt`
 echo ${firstline} > ${new_path}/unittest/test/CMakeLists.txt
+
+# init a git repo
+cd ${new_path}
+git init .
+git add * .travis.yml 

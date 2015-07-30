@@ -1,0 +1,44 @@
+#!/bin/bash
+
+tools_dir=$(cd "$(dirname "$0")"; pwd)
+proj_dir=`dirname ${tools_dir}`
+
+olddir=`pwd`
+
+if [ $# -ne 1 ];
+then
+  echo "Usage:"
+  echo "  createtest name_of_test"
+  exit 1
+fi
+
+mkdir -p ${proj_dir}/test
+
+fn=`basename $1`
+
+echo \
+"
+/**
+ * \file ${fn}
+ * \date `date +%Y`
+ */
+
+#include \"unittest.h\"
+
+TEST_FUNC( no_op )
+{
+    TEST_TRUE( true );
+}
+
+void SetupTests(void)
+{
+    REG_TEST( no_op );
+}
+" > ${proj_dir}/test/${fn}
+
+echo \
+"
+add_test_exe    (${fn%.*} ${fn})
+test_link_libs  (${fn%.*} )
+create_test     (${fn%.*})
+" >> ${proj_dir}/test/CMakeLists.txt

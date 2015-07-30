@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+tools_dir=$(cd "$(dirname "$0")"; pwd)
+proj_dir=`dirname ${tools_dir}`
+
+var="${proj_dir}/LICENSE.txt"
+if [ -e ${var} ]
+then
+    echo ${var}
+    exit 0;
+fi
+
+var="${proj_dir}/LICENSE"
+if [ -e ${var} ]
+then
+    echo ${var}
+    exit 0;
+fi
+
+var="${proj_dir}/COPYING.txt"
+if [ -e ${var} ]
+then
+    echo ${var}
+    exit 0;
+fi
+
+var="${proj_dir}/COPYING"
+if [ -e ${var} ]
+then
+    echo ${var}
+    exit 0;
+fi
+
+var="${proj_dir}/license.txt"
+if [ -e ${var} ]
+then
+    echo ${var}
+    exit 0;
+fi
+
+var="${proj_dir}/license"
+if [ -e ${var} ]
+then
+    echo ${var}
+    exit 0;
+fi
+
+var="${proj_dir}/copying.txt"
+if [ -e ${var} ]
+then
+    echo ${var}
+    exit 0;
+fi
+
+var="${proj_dir}/copying"
+if [ -e ${var} ]
+then
+    echo ${var}
+    exit 0;
+fi
+
+exit 1;

@@ -74,11 +74,14 @@
 #ifndef PROJ_UNITTEST_UNITTEST_H
 #define PROJ_UNITTEST_UNITTEST_H
 
+
 #include <stdio.h>
 #include <time.h>
 #include <stdlib.h>
 
 #define ERR_STRM stderr
+
+const char* EXE_NAME = NULL;
 
 /* --- Test function types --- */
 
@@ -510,6 +513,8 @@ int main(int argc, const char* argv[]) {
     SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_WHITE);
     SetConsoleTextAttribute(GetStdHandle(STD_ERROR_HANDLE), FOREGROUND_WHITE);
 #endif
+
+    EXE_NAME = argv[0];
 
     SetupTests();
     ASSERT_TRUE(CURR_TEST_ < MAX_TESTS);
