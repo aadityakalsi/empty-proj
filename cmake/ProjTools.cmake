@@ -212,7 +212,7 @@ endif()
 
 # -- add_comp_flag: Add compile flag to target
 function(add_comp_flag tgt def)
-  target_compile_options(${tgt} PUBLIC ${def})
+  target_compile_options(${tgt} PRIVATE ${def})
 endfunction(add_comp_flag)
 
 # -- add_comp_def: Add compile definitions
@@ -311,7 +311,7 @@ endfunction(add_lib)
 
 # -- add_lib_build_def: Add library compile definition
 function(add_lib_build_def tgt buildSym)
-  target_compile_definitions(${tgt} PUBLIC ${buildSym})
+  target_compile_definitions(${tgt} PRIVATE ${buildSym})
 endfunction(add_lib_build_def)
 
 # -- link_libs: Link to libraries (target_link_libraries mimic)
