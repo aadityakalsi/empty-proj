@@ -182,13 +182,6 @@ else()
   projmsg("Code coverage disabled")
 endif()
 
-if(CMAKE_C_COMPILER_ID MATCHES "Clang")
-  set(USING_CLANG TRUE CACHE STRING "Using Clang")
-  if(APPLE)
-    set(USING_APPLE_CLANG TRUE CACHE STRING "Using AppleClang")
-  endif()
-endif()
-
 if(WIN32)
   set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
   set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
