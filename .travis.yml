@@ -21,7 +21,9 @@ script:
   - echo y | tools/build $BTYPE
 
 after_success:
-  - if [ ${BTYPE} = "Release" ]; then tools/test_on_install Release; fi
+  - tools/test_on_install $BTYPE
+  # Package and email artifacts
+  # - ./travis_email_artifacts 
 
 notifications:
   email:
