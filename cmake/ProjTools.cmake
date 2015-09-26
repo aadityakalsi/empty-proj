@@ -91,9 +91,9 @@ set(PROJ_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(PROJ_INCLUDE_DIR ${PROJ_DIR}/include)
 
 # -- Define project globals: INSTALL dirs
-set(PROJ_INSTALL_BIN_DIR     bin)
-set(PROJ_INSTALL_LIB_DIR     lib)
-set(PROJ_INSTALL_INC_DIR     include)
+set(PROJ_INSTALL_BIN_DIR bin)
+set(PROJ_INSTALL_LIB_DIR lib)
+set(PROJ_INSTALL_INC_DIR include)
 if(WIN32)
   set(PROJ_INSTALL_SHARE_DIR .)
 else()
@@ -109,6 +109,9 @@ else()
     set(PROJ_INSTALL_DIR ${PROJ_DIR}/install)
   endif()
 endif()
+
+# Make install dir absolute
+get_filename_component(PROJ_INSTALL_DIR ${PROJ_INSTALL_DIR} ABSOLUTE)
 
 projmsg("Include folder: " ${PROJ_INCLUDE_DIR})
 projmsg("Install folder: " ${PROJ_INSTALL_DIR})
@@ -519,15 +522,13 @@ function(add_test_exe testname filename)
     file(WRITE ${test_dirname}/CMakeLists.txt
       "# Generated CMakeLists.txt for install test ${testname}\n")
     file(APPEND ${test_dirname}/CMakeLists.txt
-      "set_directory_properties(PROPERTIES INCLUDE_DIRECTORIES ${PROJ_INSTALL_DIR}/${PROJ_INSTALL_INC_DIR})\n")
-    file(APPEND ${test_dirname}/CMakeLists.txt
       "if (USE_CODE_COV)\n")
     file(APPEND ${test_dirname}/CMakeLists.txt
       "  add_definitions(-O0 -fprofile-arcs -ftest-coverage)\n")
     file(APPEND ${test_dirname}/CMakeLists.txt
       "  set(CMAKE_EXE_LINKER_FLAGS=\"-fprofile-arcs -ftest-coverage\")\n")
     file(APPEND ${test_dirname}/CMakeLists.txt
-      "  file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/coverage)\n")
+      "  file(MAKE_DIRECTORY \"${CMAKE_BINARY_DIR}/coverage\")\n")
     file(APPEND ${test_dirname}/CMakeLists.txt
       "endif()\n")
     file(APPEND ${test_dirname}/CMakeLists.txt
@@ -535,7 +536,9 @@ function(add_test_exe testname filename)
     file(APPEND ${test_dirname}/CMakeLists.txt
       "add_dependencies(${testname}_install install_for_check_done)\n")
     file(APPEND ${test_dirname}/CMakeLists.txt
-      "add_inc_dir(${testname}_install ${PROJ_DIR}/unittest)\n")
+      "add_inc_dir(${testname}_install \"${PROJ_DIR}/unittest\")\n")
+    file(APPEND ${test_dirname}/CMakeLists.txt
+      "add_inc_dir(${testname}_install \"${PROJ_INSTALL_DIR}/${PROJ_INSTALL_INC_DIR}\")\n")
   endif()
 endfunction(add_test_exe)
 
@@ -550,7 +553,7 @@ function(test_link_libs testname)
   if ("${${testname}_gen}")
     set(test_dirname "${testname}.toi")
     file(APPEND ${test_dirname}/CMakeLists.txt
-      "set_directory_properties(PROPERTIES LINK_DIRECTORIES ${PROJ_INSTALL_DIR}/${PROJ_INSTALL_LIB_DIR})\n")
+      "set_directory_properties(PROPERTIES LINK_DIRECTORIES \"${PROJ_INSTALL_DIR}/${PROJ_INSTALL_LIB_DIR}\")\n")
     file(APPEND ${test_dirname}/CMakeLists.txt
       "link_libs_install(${install_test_args})\n")
   endif()
