@@ -44,5 +44,9 @@ echo ${firstline} > ${new_path}/unittest/test/CMakeLists.txt
 
 # init a git repo
 cd ${new_path}
+# -- add src/ and include/ directories
+mkdir src
+mkdir include
 git init .
 git add * .travis.yml 
+
