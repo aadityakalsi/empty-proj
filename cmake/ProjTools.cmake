@@ -128,6 +128,7 @@ if(NOT CMAKE_BUILD_TYPE)
 	 FORCE)
 endif(NOT CMAKE_BUILD_TYPE)
 
+string(COMPARE EQUAL ${CMAKE_C_COMPILER_ID} "Clang" is_clang)
 string(COMPARE EQUAL ${CMAKE_C_COMPILER_ID} "MSVC" is_msvc)
 if(is_msvc)
   set(USING_MSVC TRUE CACHE STRING "Using MSVC")
@@ -509,6 +510,12 @@ function(add_test_exe testname filename)
   list(REMOVE_AT install_test_args 0)
   list(INSERT install_test_args 0 "${testname}_install")
   
+  if(USING_CODE_COV AND is_clang)
+    set(xtraflag --coverage)
+  else()
+    set(xtraflag)
+  endif()
+
   # generate a CMakeLists.txt
   set("${testname}_gen" 1 CACHE INTERNAL "Base dir" FORCE)
   if ("${${testname}_gen}")
@@ -519,13 +526,14 @@ function(add_test_exe testname filename)
     file(APPEND ${test_dirname}/CMakeLists.txt
       "  add_definitions(-O0 -fprofile-arcs -ftest-coverage)\n")
     file(APPEND ${test_dirname}/CMakeLists.txt
-      "  set(CMAKE_EXE_LINKER_FLAGS=\"-fprofile-arcs -ftest-coverage\")\n")
+    file(APPEND ${test_dirname}/CMakeLists.txt
+      "  set(CMAKE_EXE_LINKER_FLAGS=\"-fprofile-arcs -ftest-coverage ${xtraflag}\")\n")
     file(APPEND ${test_dirname}/CMakeLists.txt
       "  file(MAKE_DIRECTORY \"${CMAKE_BINARY_DIR}/coverage\")\n")
     file(APPEND ${test_dirname}/CMakeLists.txt
       "endif()\n")
     file(APPEND ${test_dirname}/CMakeLists.txt
-      "add_exe(${install_test_args})\n")
+      "add_executable(${install_test_args})\n")
     file(APPEND ${test_dirname}/CMakeLists.txt
       "add_dependencies(${testname}_install install_for_check_done)\n")
     file(APPEND ${test_dirname}/CMakeLists.txt
