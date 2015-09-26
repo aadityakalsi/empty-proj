@@ -539,6 +539,18 @@ function(add_test_exe testname filename)
       "add_inc_dir(${testname}_install \"${PROJ_DIR}/unittest\")\n")
     file(APPEND ${test_dirname}/CMakeLists.txt
       "add_inc_dir(${testname}_install \"${PROJ_INSTALL_DIR}/${PROJ_INSTALL_INC_DIR}\")\n")
+    file(APPEND ${test_dirname}/CMakeLists.txt
+      "if (USE_CODE_COV)\n")
+    file(APPEND ${test_dirname}/CMakeLists.txt
+      "  add_link_flag(${testname}_install -fprofile-arcs)\n")
+    file(APPEND ${test_dirname}/CMakeLists.txt
+      "  add_link_flag(${testname}_install -ftest-coverage)\n")
+  if(USING_CODE_COV AND is_clang)
+    file(APPEND ${test_dirname}/CMakeLists.txt
+      "  add_link_flag(${testname}_install --coverage)\n")
+  endif()
+    file(APPEND ${test_dirname}/CMakeLists.txt
+      "endif()\n")
   endif()
 endfunction(add_test_exe)
 
