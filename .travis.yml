@@ -17,9 +17,16 @@ before_install:
   - sudo apt-get update -qq
 
 install:
-  - sudo apt-get install -y lcov
+  - if [ ${TRAVIS_OS_NAME} = "linux" ]; then sudo apt-get install -y lcov
+  - if [ ${TRAVIS_OS_NAME} = "osx" ]; then
+      # Since default gcc on osx is just a front-end for LLVM
+      if [[ ${CC} = gcc ]]; then
+        export CXX=g++-4.8
+        export CC=gcc-4.8
+      fi
+    fi
   # install gcc 4.8 and update alternatives
-  - if [ ${CXX} = "g++" ]; then sudo apt-get install -y gcc-4.8 g++-4.8; fi
+  - if [ ${CXX} = "g++" ] && ; then sudo apt-get install -y gcc-4.8 g++-4.8; fi
   - if [ ${CXX} = "g++" ]; then sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 90; fi
   # install CMake 3.2.2
   - curl http://www.cmake.org/files/v3.2/cmake-3.2.2.tar.gz | tar -xzf -
