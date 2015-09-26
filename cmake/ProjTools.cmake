@@ -525,7 +525,7 @@ function(add_test_exe testname filename)
     file(APPEND ${test_dirname}/CMakeLists.txt
       "endif()\n")
     file(APPEND ${test_dirname}/CMakeLists.txt
-      "add_executable(${install_test_args})\n")
+      "add_exe(${install_test_args})\n")
     file(APPEND ${test_dirname}/CMakeLists.txt
       "add_dependencies(${testname}_install install_for_check_done)\n")
     file(APPEND ${test_dirname}/CMakeLists.txt
