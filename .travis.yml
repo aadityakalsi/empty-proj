@@ -1,5 +1,5 @@
 language: cpp
-
+sudo: required
 os:
   - linux
   - osx
@@ -24,7 +24,7 @@ script:
 after_success:
   - tools/test_on_install $BTYPE
   # Package and email artifacts
-  # - ./travis_email_artifacts 
+  - ./travis_email_artifacts 
 
 notifications:
   email:
