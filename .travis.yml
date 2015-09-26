@@ -14,6 +14,8 @@ env:
 
 install:
   - ./travis_setup
+  # We use gcc-4.8
+  - if [ ${CC} = "gcc" ]; then export CC="gcc-4.8" && export CXX="g++-4.8"; fi
 
 script:
   - echo y | tools/build $BTYPE
