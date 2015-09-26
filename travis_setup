@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "Preparing build tools ..."
+echo "[TRAVIS_SETUP] Preparing build tools..."
 
 # prepare linux env
 if [ ${TRAVIS_OS_NAME} = "linux" ]; then
@@ -14,11 +14,11 @@ fi
 
 # prepare mac env
 if [ ${TRAVIS_OS_NAME} = "osx" ]; then
-    brew install lcov
+    (brew install lcov) &> /dev/null
 fi
 
 # use CMake 3.2
-echo "Installing CMake 3.2 ..."
+echo "[TRAVIS_SETUP] Installing CMake 3.2..."
 cd /tmp
 (curl http://www.cmake.org/files/v3.2/cmake-3.2.2.tar.gz | tar -xzf -) &> /dev/null
 cd cmake-3.2.2

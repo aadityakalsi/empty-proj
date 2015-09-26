@@ -54,14 +54,19 @@
 # # add_subdirectory(module1; module2)
 # #
 # # # -- Functions available
-# # add_inc_dir()
-# # add_exe()
-# # add_lib()
-# # add_lib_build_def()
-# # link_libs()
-# # set_tgt_ver()
-# # install_hdr()
-# # install_tgt()
+# # add_comp_flag tgt def
+# # add_comp_def tgt def
+# # add_link_flag tgt flag
+# # add_inc_dir tgt dir
+# # add_exe tgt
+# # add_lib tgt
+# # add_lib_build_def tgt buildSym
+# # link_libs tgt
+# # set_tgt_ver tgt
+# # install_hdr
+# # install_tgt libname
+# # add_hdrs_ide
+# # add_hdrs_tgt_ide tgt_name
 # # 
 # # # -- Functions available for tests
 # # In tests, you should use:
@@ -327,9 +332,9 @@ if (USE_CODE_COV)
 endif()
 
 if((NOT WIN32) AND (NOT USE_CODE_COV))
-  if(USING_APPLE_CLANG)
+  if(APPLE)
     add_link_flag(${tgt} -dead_strip)
-  else()#GCC like compiler
+  else()#Linux GCC like driver
     add_link_flag(${tgt} -Wl,--gc-sections)
     add_link_flag(${tgt} -Wl,--as-needed)
   endif()
