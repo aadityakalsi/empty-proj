@@ -526,8 +526,7 @@ function(add_test_exe testname filename)
     file(APPEND ${test_dirname}/CMakeLists.txt
       "  add_definitions(-O0 -fprofile-arcs -ftest-coverage)\n")
     file(APPEND ${test_dirname}/CMakeLists.txt
-    file(APPEND ${test_dirname}/CMakeLists.txt
-      "  set(CMAKE_EXE_LINKER_FLAGS=\"-fprofile-arcs -ftest-coverage ${xtraflag}\")\n")
+      "  set(CMAKE_EXE_LINKER_FLAGS=\"-fprofile-arcs -ftest-coverage \${xtraflag}\")\n")
     file(APPEND ${test_dirname}/CMakeLists.txt
       "  file(MAKE_DIRECTORY \"${CMAKE_BINARY_DIR}/coverage\")\n")
     file(APPEND ${test_dirname}/CMakeLists.txt
