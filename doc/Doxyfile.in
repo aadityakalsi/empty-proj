@@ -1,9 +1,10 @@
 # Doxyfile
 
 PROJECT_NAME             = @PROJ_NAME@
-OPTIMIZE_OUTPUT_FOR_C    = NO
+OPTIMIZE_OUTPUT_FOR_C    = YES
+RECURSIVE                = YES
 
-INPUT =  @CMAKE_SOURCE_DIR@ \
+INPUT =  @CMAKE_SOURCE_DIR@/include \
          @CMAKE_SOURCE_DIR@/doc
 
 # The OUTPUT_LANGUAGE tag is used to specify the language in which all 
