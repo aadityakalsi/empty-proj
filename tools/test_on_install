@@ -11,8 +11,9 @@ do
   PARAMS="${PARAMS} \"${PARAM}\""
 done
 
+export INSTALL_BASE_DIR="${tools_dir}/../install"
+
 bash -c "echo y | ${tools_dir}/regen ${PARAMS}"
 export VERBOSE=1
 rm -fr ${proj_dir}/install
 cmake --build ${tools_dir}/../build --target check_on_install --config $1
-

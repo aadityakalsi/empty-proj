@@ -7,20 +7,6 @@
 # Before including this module, the following definitions need to
 # be in place in your main CMakeLists.txt file.
 # 
-# Project structure:
-# 
-# + project
-# |
-# |- CMakeLists.txt
-# |- LICENSE.txt
-# |- README.txt
-# |+ cmake
-# |+ module1
-# |+ module2
-# |...
-# |+ unittest (Unittest header available for writing unittests)
-# |
-# 
 # Sample CMakeLists.txt file:
 # 
 # # CMakeLists.txt
@@ -54,24 +40,81 @@
 # # add_subdirectory(module1; module2)
 # #
 # # # -- Functions available
-# # add_inc_dir()
-# # add_exe()
-# # add_lib()
-# # add_lib_build_def()
-# # link_libs()
-# # set_tgt_ver()
-# # install_hdr()
-# # install_tgt()
+# # projmsg(msg)                       # display a project message
+# # add_comp_flag(tgt def)             # add a compile flag at the end for target
+# # add_comp_def(tgt def)              # add a compile definition at the end for target
+# # add_link_flag(tgt flag)            # add a linker flag at the end for target
+# # add_inc_dir(tgt dir)               # add an include directory for target
+# # add_exe(tgt ...)                   # add_executable replacement
+# # add_lib(tgt ...)                   # add_library replacement
+# # link_libs(tgt ...)                 # target_link_libraries replacement
+# # add_lib_build_def(tgt buildSym)    # add a build symbol for shared library; does nothing for static library
+# # set_tgt_ver(tgt ...)               # sets the version for a target
+# # install_hdr(files)                 # set headers as export headers
+# # install_tgt(name)                  # install a given target
+# # add_hdrs_ide(files)                # add files to IDE target
 # # 
-# # # -- Functions available for tests
-# # In tests, you should use:
-# # add_test_exe()
-# # test_link_libs()
-# # create_test()
+# # # -- Functions available for tests in tests, you should use:
+# # #    These enable test on install automatically.
+# # add_test_exe()                     # same as add_exe() but for tests
+# # test_link_libs()                   # same as link_libs() but for tests
+# # create_test()                      # add the target to the test list
 # #
 #
 
 cmake_minimum_required(VERSION 3.0)
+
+if(PROJ_BASE_DIR)
+  return()
+endif()
+
+function(projmsg)
+  message("-- [${PROJ_NAME}] " ${ARGV})
+endfunction(projmsg)
+
+function(projerr)
+  message(FATAL_ERROR "-- [${PROJ_NAME}] " ${ARGV})
+endfunction(projerr)
+
+if(PROJECT_NAME)
+  set(PROJ_NAME ${PROJECT_NAME})
+endif()
+
+if(NOT PROJ_NAME)
+  projerr("PROJ_NAME not defined.")
+endif()
+
+# -- Get the folder containing the project
+get_filename_component(PROJ_BASE_DIR_TMP ${CMAKE_CURRENT_SOURCE_DIR} PATH)
+set(PROJ_BASE_DIR ${PROJ_BASE_DIR_TMP} CACHE INTERNAL "Base dir" FORCE)
+set(PROJ_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+set(PROJ_INCLUDE_DIR ${PROJ_DIR}/include)
+
+# -- Define project globals: INSTALL dirs
+set(PROJ_INSTALL_BIN_DIR bin)
+set(PROJ_INSTALL_LIB_DIR lib)
+set(PROJ_INSTALL_INC_DIR include)
+if(WIN32)
+  set(PROJ_INSTALL_SHARE_DIR .)
+else()
+  set(PROJ_INSTALL_SHARE_DIR share/${PROJ_NAME})
+endif()
+
+if (DEFINED ENV{INSTALL_BASE_DIR})
+  set(PROJ_INSTALL_DIR $ENV{INSTALL_BASE_DIR})
+else()
+  if(CMAKE_INSTALL_PREFIX)
+    set(PROJ_INSTALL_DIR ${CMAKE_INSTALL_PREFIX})
+  else()
+    set(PROJ_INSTALL_DIR ${PROJ_DIR}/install)
+  endif()
+endif()
+
+# Make install dir absolute
+get_filename_component(PROJ_INSTALL_DIR ${PROJ_INSTALL_DIR} ABSOLUTE)
+
+projmsg("Include folder: " ${PROJ_INCLUDE_DIR})
+projmsg("Install folder: " ${PROJ_INSTALL_DIR})
 
 # -- Force the build type to ensure this works on Windows
 if(NOT CMAKE_BUILD_TYPE)
@@ -85,6 +128,7 @@ if(NOT CMAKE_BUILD_TYPE)
 	 FORCE)
 endif(NOT CMAKE_BUILD_TYPE)
 
+string(COMPARE EQUAL ${CMAKE_C_COMPILER_ID} "Clang" is_clang)
 string(COMPARE EQUAL ${CMAKE_C_COMPILER_ID} "MSVC" is_msvc)
 if(is_msvc)
   set(USING_MSVC TRUE CACHE STRING "Using MSVC")
@@ -119,23 +163,25 @@ else()#GCC like compiler
   endif()
 endif()
 
-if(CMAKE_C_COMPILER_ID MATCHES "Clang")
-  set(USING_CLANG TRUE CACHE STRING "Using Clang")
-  if(APPLE)
-    set(USING_APPLE_CLANG TRUE CACHE STRING "Using AppleClang")
-  endif()
+if(PROJ_USE_LTO)
+  projmsg("PROJ_USE_LTO=TRUE   Using link time optimization")
+else()
+  projmsg("PROJ_USE_LTO=FALSE  Not using link time optimization")
 endif()
 
-# -- Get the folder containing the project
-get_filename_component(PROJ_BASE_DIR_TMP ${CMAKE_CURRENT_SOURCE_DIR} PATH)
-set(PROJ_BASE_DIR ${PROJ_BASE_DIR_TMP} CACHE INTERNAL "Base dir" FORCE)
-message("-- Base include dir: " ${PROJ_BASE_DIR})
-message("-- Install location: " ${PROJ_INSTALL_DIR})
+# -- Code coverage defines
+if ((UNIX OR APPLE) AND (CMAKE_BUILD_TYPE STREQUAL "Debug"))
+  set(USE_CODE_COV 1)
+  file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/coverage)
+else()
+  set(USE_CODE_COV 0)
+endif()
 
-# -- Define project globals: INSTALL dirs
-set(PROJ_INSTALL_BIN_DIR bin)
-set(PROJ_INSTALL_LIB_DIR lib)
-set(PROJ_INSTALL_INC_DIR include/${PROJ_NAME})
+if(USE_CODE_COV)
+  projmsg("Code coverage enabled")
+else()
+  projmsg("Code coverage disabled")
+endif()
 
 if(WIN32)
   set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
@@ -160,16 +206,17 @@ include(InstallRequiredSystemLibraries)
 set(TMPDIR ${CMAKE_BINARY_DIR}/temp CACHE INTERNAL "Temp dir" FORCE)
 file(MAKE_DIRECTORY ${TMPDIR})
 if(NOT EXISTS "${TMPDIR}")
-  message(FATAL_ERROR "OOOPS, can't determine temporary directory")
+  projerr(FATAL_ERROR "OOOPS, can't determine temporary directory")
 endif()
 
 # --- INSTALLATION
-install(FILES ${PROJ_LICENSE_FILE} ${PROJ_README_FILE} DESTINATION .)
+install(FILES ${PROJ_LICENSE_FILE} DESTINATION ${PROJ_INSTALL_SHARE_DIR})
+install(FILES ${PROJ_README_FILE}  DESTINATION ${PROJ_INSTALL_SHARE_DIR})
 
 # --- PACKAGING
 # include CPack for packagaing
-set(CPACK_RESOURCE_FILE_LICENSE ${CMAKE_SOURCE_DIR}/${PROJ_LICENSE_FILE})
-set(CPACK_RESOURCE_FILE_README  ${CMAKE_SOURCE_DIR}/${PROJ_README_FILE})
+set(CPACK_RESOURCE_FILE_LICENSE ${PROJ_DIR}/${PROJ_LICENSE_FILE})
+set(CPACK_RESOURCE_FILE_README  ${PROJ_DIR}/${PROJ_README_FILE})
 
 # On Windows, the package install name must be set
 if (WIN32)
@@ -179,31 +226,44 @@ endif(WIN32)
 include(CPack)
 
 # -- Add C++ and C++11 flags and C99 flags
+string(REPLACE "CXX" "" repllang "${ENABLED_LANGUAGES}")
+if(repllang)
+  string(COMPARE EQUAL ${repllang} "${ENABLED_LANGUAGES}" USE_CPP_DET)
+else()
+  set(USE_CPP_DET 0)
+endif()
+
+if(USE_CPP_DET)
+  set(USE_CPP 1)
+else()
+  if(USE_CPP)
+    enable_language(CXX)
+    set(USE_CPP 1)
+  else()
+    set(USE_CPP 0)
+  endif()  
+endif()
+
 if (NOT WIN32)
   if (USE_CPP)
     if (USE_CPP11)
       set(STD_CPPVER_FLAG -std=c++11)
+      projmsg("USE_CPP11=TRUE   Using C++11")
     else()
       set(STD_CPPVER_FLAG -std=c++03)
+      projmsg("USE_CPP11=FALSE  Using C++03")
     endif(USE_CPP11)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${STD_CPPVER_FLAG}")
   endif(USE_CPP)
 
   set(STD_CVER_FLAG -std=c99)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${STD_CVER_FLAG}")
+  projmsg("Using C99")
 endif(NOT WIN32)
-
-# -- Code coverage defines
-if ((UNIX OR APPLE) AND (CMAKE_BUILD_TYPE STREQUAL "Debug"))
-  set(USE_CODE_COV 1)
-  file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/coverage)
-else()
-  set(USE_CODE_COV 0)
-endif()
 
 # -- For debug with lcov, we skip -Wl,-no-undefined
 if((NOT USE_CODE_COV) AND (NOT WIN32))
-  if(USING_APPLE_CLANG)
+  if(APPLE)
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-undefined,error")
   else()#GCC like compiler
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--no-undefined")
@@ -249,7 +309,7 @@ endfunction(add_inc_dir)
 # -- add_exe: Add executable target (add_executable mimic)
 function(add_exe tgt)
   add_executable(${ARGV})
-  add_inc_dir(${tgt} ${PROJ_BASE_DIR})
+  add_inc_dir(${tgt} ${PROJ_INCLUDE_DIR})
 
 # -- Add warning flags
 # --- Error on warnings, and enable all
@@ -281,7 +341,7 @@ endfunction(add_exe)
 # -- add_lib: Add library target (add_library mimic)
 function(add_lib tgt)
   add_library(${ARGV})
-  add_inc_dir(${tgt} ${PROJ_BASE_DIR})
+  add_inc_dir(${tgt} ${PROJ_INCLUDE_DIR})
 
 # -- Add warning flags
 # --- Error on warnings, and enable all
@@ -311,7 +371,11 @@ endfunction(add_lib)
 
 # -- add_lib_build_def: Add library compile definition
 function(add_lib_build_def tgt buildSym)
-  target_compile_definitions(${tgt} PRIVATE ${buildSym})
+  get_target_property(tgttype ${tgt} TYPE)
+  string(COMPARE EQUAL ${tgttype} "SHARED_LIBRARY" is_shared)
+  if(is_shared)
+    target_compile_definitions(${tgt} PRIVATE ${buildSym})
+  endif()
 endfunction(add_lib_build_def)
 
 # -- link_libs: Link to libraries (target_link_libraries mimic)
@@ -327,9 +391,9 @@ if (USE_CODE_COV)
 endif()
 
 if((NOT WIN32) AND (NOT USE_CODE_COV))
-  if(USING_APPLE_CLANG)
+  if(APPLE)
     add_link_flag(${tgt} -dead_strip)
-  else()#GCC like compiler
+  else()#Linux GCC like driver
     add_link_flag(${tgt} -Wl,--gc-sections)
     add_link_flag(${tgt} -Wl,--as-needed)
   endif()
@@ -362,12 +426,13 @@ if (USE_CODE_COV)
 endif()
 
   target_link_libraries(${ARGV} ${xtra_libs})
-  add_inc_dir(${tgt} ${PROJ_INSTALL_DIR}/include)
+  add_inc_dir(${tgt} ${PROJ_INSTALL_DIR}/${PROJ_INSTALL_INC_DIR})
 endfunction(link_libs_install)
 
 # -- install_hdr: Install headers function
 function(install_hdr)
-  string(REGEX REPLACE "${CMAKE_SOURCE_DIR}" "${PROJ_INSTALL_INC_DIR}" relpath ${CMAKE_CURRENT_SOURCE_DIR})
+  # project includes are under include/
+  set(relpath ${PROJ_INSTALL_DIR})
   foreach(file ${ARGV})
     get_filename_component(parent_dir ${file} DIRECTORY)
     install(FILES ${file} DESTINATION ${relpath}/${parent_dir})
@@ -401,6 +466,7 @@ add_custom_target(install_for_check_done DEPENDS install_for_check.done)
 
 # add the check on install
 add_custom_target(check_on_install)
+add_dependencies(check_on_install install_for_check_done)
 
 # -- add_hdrs_ide: Add headers to IDE
 function(add_hdrs_ide)
@@ -427,14 +493,14 @@ function(add_test_exe testname filename)
     add_custom_command(TARGET ${testname} POST_BUILD COMMAND ${testname})
   endif()
 
-  add_inc_dir(${testname} ${CMAKE_SOURCE_DIR}/unittest)
+  add_inc_dir(${testname} ${PROJ_DIR}/unittest)
   add_test(${testname} ${testname})
   add_dependencies(check ${testname})
 
   # deal with test on install
   # copy file to temp folder
   set(test_dirname "${testname}.toi")
-  message("-- TOI: Adding test for ${testname} in dir ${test_dirname}")
+  projmsg("Adding install test for ${testname} in dir ${test_dirname}")
   
   # copy the file over
   file(MAKE_DIRECTORY ${test_dirname})
@@ -444,21 +510,25 @@ function(add_test_exe testname filename)
   list(REMOVE_AT install_test_args 0)
   list(INSERT install_test_args 0 "${testname}_install")
   
+  if(USING_CODE_COV AND is_clang)
+    set(xtraflag --coverage)
+  else()
+    set(xtraflag)
+  endif()
+
   # generate a CMakeLists.txt
   set("${testname}_gen" 1 CACHE INTERNAL "Base dir" FORCE)
   if ("${${testname}_gen}")
     file(WRITE ${test_dirname}/CMakeLists.txt
       "# Generated CMakeLists.txt for install test ${testname}\n")
     file(APPEND ${test_dirname}/CMakeLists.txt
-      "set_directory_properties(PROPERTIES INCLUDE_DIRECTORIES ${PROJ_INSTALL_DIR}/include)\n")
-    file(APPEND ${test_dirname}/CMakeLists.txt
       "if (USE_CODE_COV)\n")
     file(APPEND ${test_dirname}/CMakeLists.txt
       "  add_definitions(-O0 -fprofile-arcs -ftest-coverage)\n")
     file(APPEND ${test_dirname}/CMakeLists.txt
-      "  set(CMAKE_EXE_LINKER_FLAGS=\"-fprofile-arcs -ftest-coverage\")\n")
+      "  set(CMAKE_EXE_LINKER_FLAGS=\"-fprofile-arcs -ftest-coverage \${xtraflag}\")\n")
     file(APPEND ${test_dirname}/CMakeLists.txt
-      "  file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/coverage)\n")
+      "  file(MAKE_DIRECTORY \"${CMAKE_BINARY_DIR}/coverage\")\n")
     file(APPEND ${test_dirname}/CMakeLists.txt
       "endif()\n")
     file(APPEND ${test_dirname}/CMakeLists.txt
@@ -466,7 +536,21 @@ function(add_test_exe testname filename)
     file(APPEND ${test_dirname}/CMakeLists.txt
       "add_dependencies(${testname}_install install_for_check_done)\n")
     file(APPEND ${test_dirname}/CMakeLists.txt
-      "add_inc_dir(${testname}_install ${CMAKE_SOURCE_DIR}/unittest)\n")
+      "add_inc_dir(${testname}_install \"${PROJ_DIR}/unittest\")\n")
+    file(APPEND ${test_dirname}/CMakeLists.txt
+      "add_inc_dir(${testname}_install \"${PROJ_INSTALL_DIR}/${PROJ_INSTALL_INC_DIR}\")\n")
+    file(APPEND ${test_dirname}/CMakeLists.txt
+      "if (USE_CODE_COV)\n")
+    file(APPEND ${test_dirname}/CMakeLists.txt
+      "  add_link_flag(${testname}_install -fprofile-arcs)\n")
+    file(APPEND ${test_dirname}/CMakeLists.txt
+      "  add_link_flag(${testname}_install -ftest-coverage)\n")
+  if(USING_CODE_COV AND is_clang)
+    file(APPEND ${test_dirname}/CMakeLists.txt
+      "  add_link_flag(${testname}_install --coverage)\n")
+  endif()
+    file(APPEND ${test_dirname}/CMakeLists.txt
+      "endif()\n")
   endif()
 endfunction(add_test_exe)
 
@@ -481,7 +565,7 @@ function(test_link_libs testname)
   if ("${${testname}_gen}")
     set(test_dirname "${testname}.toi")
     file(APPEND ${test_dirname}/CMakeLists.txt
-      "set_directory_properties(PROPERTIES LINK_DIRECTORIES ${PROJ_INSTALL_DIR}/${PROJ_INSTALL_LIB_DIR})\n")
+      "set_directory_properties(PROPERTIES LINK_DIRECTORIES \"${PROJ_INSTALL_DIR}/${PROJ_INSTALL_LIB_DIR}\")\n")
     file(APPEND ${test_dirname}/CMakeLists.txt
       "link_libs_install(${install_test_args})\n")
   endif()
@@ -524,28 +608,28 @@ function(create_test testname)
 endfunction(create_test)
 
 # -- GENERATE CODE COVERAGE REPORT
-  if(USE_CODE_COV)
-    if (WIN32)
-      set(cd_cmd "cd /d")
-    else()
-      set(cd_cmd "cd")
-    endif()
-    
-    include("cmake/CodeCoverage.cmake")
-    
-    add_custom_target(check.cov.gen ALL)
-    add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/check
-                       DEPENDS check.cov.gen
-                       COMMAND echo "#!/bin/sh" > ${CMAKE_BINARY_DIR}/check
-                       COMMAND echo "${cd_cmd} ${CMAKE_BINARY_DIR}" >> ${CMAKE_BINARY_DIR}/check
-                       COMMAND echo "${CMAKE_COMMAND} .." >> ${CMAKE_BINARY_DIR}/check
-                       COMMAND echo "${CMAKE_COMMAND} --build ." >> ${CMAKE_BINARY_DIR}/check
-                       COMMAND chmod u+x ${CMAKE_BINARY_DIR}/check)
-    add_custom_target(check.cov.gen.done DEPENDS check.cov.gen ${CMAKE_BINARY_DIR}/check)
-    SETUP_TARGET_FOR_COVERAGE(check.cov ${CMAKE_BINARY_DIR}/check ${CMAKE_BINARY_DIR}/coverage)
-    add_dependencies(check.cov check.cov.gen.done)
-    add_custom_target(check.cov.done DEPENDS check.cov)
-    add_custom_command(TARGET check.cov.done
-        POST_BUILD COMMAND echo "View the report: `pwd`/coverage/index.html")
-    add_custom_target(code_cov DEPENDS check.cov.done)
+if(USE_CODE_COV)
+  if (WIN32)
+    set(cd_cmd "cd /d")
+  else()
+    set(cd_cmd "cd")
   endif()
+  
+  include("cmake/CodeCoverage.cmake")
+  
+  add_custom_target(check.cov.gen ALL)
+  add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/check
+                     DEPENDS check.cov.gen
+                     COMMAND echo "#!/bin/sh" > ${CMAKE_BINARY_DIR}/check
+                     COMMAND echo "${cd_cmd} ${CMAKE_BINARY_DIR}" >> ${CMAKE_BINARY_DIR}/check
+                     COMMAND echo "${CMAKE_COMMAND} .." >> ${CMAKE_BINARY_DIR}/check
+                     COMMAND echo "${CMAKE_COMMAND} --build ." >> ${CMAKE_BINARY_DIR}/check
+                     COMMAND chmod u+x ${CMAKE_BINARY_DIR}/check)
+  add_custom_target(check.cov.gen.done DEPENDS check.cov.gen ${CMAKE_BINARY_DIR}/check)
+  SETUP_TARGET_FOR_COVERAGE(check.cov ${CMAKE_BINARY_DIR}/check ${CMAKE_BINARY_DIR}/coverage)
+  add_dependencies(check.cov check.cov.gen.done)
+  add_custom_target(check.cov.done DEPENDS check.cov)
+  add_custom_command(TARGET check.cov.done
+      POST_BUILD COMMAND echo "View the report: `pwd`/coverage/index.html")
+  add_custom_target(code_cov DEPENDS check.cov.done)
+endif()
