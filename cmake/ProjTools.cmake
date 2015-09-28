@@ -277,13 +277,7 @@ endfunction(add_comp_flag)
 
 # -- add_comp_def: Add compile definitions
 function(add_comp_def tgt def)
-  get_target_property(compile_defs ${tgt} COMPILE_DEFINITIONS)
-  if(compile_defs)
-    set(compile_defs "${compile_defs} ${def}")  
-  else()
-    set(compile_defs ${def})
-  endif(compile_defs)
-  set_target_properties(${tgt} PROPERTIES COMPILE_DEFINITIONS ${compile_defs})
+  target_compile_definitions(${tgt} PRIVATE ${def})
 endfunction(add_comp_def)
 
 # -- add_link_flag: Add link flag to target
