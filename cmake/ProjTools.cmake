@@ -270,6 +270,19 @@ if((NOT USE_CODE_COV) AND (NOT WIN32))
   endif()
 endif()
 
+# -- Add common compiler flags
+if(NOT MSVC)
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-omit-frame-pointer")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-omit-frame-pointer")
+else()
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /Oy- /EHca")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Oy- /EHca")
+  set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /MDd")
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MDd")
+  set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /MD")
+  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MD")
+endif()
+
 # -- add_comp_flag: Add compile flag to target
 function(add_comp_flag tgt def)
   target_compile_options(${tgt} PRIVATE ${def})
