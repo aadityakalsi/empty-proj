@@ -1,6 +1,15 @@
 #!/bin/bash
 
 projname=$(basename $(cd "$(dirname "$0")"; pwd))
-artname="${projname}_${BTYPE}_${TRAVIS_OS_NAME}_${CC}"
+artname="${projname}_${BTYPE}_${TRAVIS_OS_NAME}_${CC}_${TRAVIS_BRANCH}_${TRAVIS_BUILD_NUMBER}"
 
-tar -czf - install/* | uuencode "$artname.tar.gz" | mail -r "travisbuild@travis-ci.org" -s "$artname" akalsi.work@gmail.com <<< "$artname"
+if [ ${TRAVIS_OS_NAME} = "linux" ]; then
+    (sudo apt-get install mutt) &> /dev/null
+fi
+
+if [ ${TRAVIS_OS_NAME} = "osx" ]; then
+    brew install mutt
+fi
+
+tar -czf "$artname.tar.gz" install/*
+echo "$artname" | mutt -s "$artname" -a "$artname.tar.gz" -- akalsi.work@gmail.com

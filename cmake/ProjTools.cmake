@@ -270,6 +270,19 @@ if((NOT USE_CODE_COV) AND (NOT WIN32))
   endif()
 endif()
 
+# -- Add common compiler flags
+if(NOT MSVC)
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-omit-frame-pointer")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-omit-frame-pointer")
+else()
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /Oy- /EHca")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Oy- /EHca")
+  set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /MDd")
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MDd")
+  set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /MD")
+  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MD")
+endif()
+
 # -- add_comp_flag: Add compile flag to target
 function(add_comp_flag tgt def)
   target_compile_options(${tgt} PRIVATE ${def})
@@ -277,13 +290,7 @@ endfunction(add_comp_flag)
 
 # -- add_comp_def: Add compile definitions
 function(add_comp_def tgt def)
-  get_target_property(compile_defs ${tgt} COMPILE_DEFINITIONS)
-  if(compile_defs)
-    set(compile_defs "${compile_defs} ${def}")  
-  else()
-    set(compile_defs ${def})
-  endif(compile_defs)
-  set_target_properties(${tgt} PROPERTIES COMPILE_DEFINITIONS ${compile_defs})
+  target_compile_definitions(${tgt} PRIVATE ${def})
 endfunction(add_comp_def)
 
 # -- add_link_flag: Add link flag to target
