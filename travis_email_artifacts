@@ -12,4 +12,4 @@ if [ ${TRAVIS_OS_NAME} = "osx" ]; then
 fi
 
 tar -czf "$artname.tar.gz" install/*
-echo "$artname" | mutt -s "$artname" -a "$artname.tar.gz" -- akalsi.work@gmail.com
+echo "$artname" | mutt -s "$artname" -a "$artname.tar.gz" -- $1
