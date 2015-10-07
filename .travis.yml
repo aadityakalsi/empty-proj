@@ -17,6 +17,7 @@ install:
   # We use gcc-4.8
   - if [ ${CC} = "gcc" ]; then export CC="gcc-4.8" && export CXX="g++-4.8"; fi
   - export INSTALL_BASE_DIR="`pwd`/install"
+  - export EMAIL_ADDR='akalsi.work@gmail.com'
 
 script:
   - echo y | tools/build $BTYPE
@@ -24,9 +25,4 @@ script:
 after_success:
   - tools/test_on_install $BTYPE
   # Package and email artifacts
-  - ./travis_email_artifacts 
-
-notifications:
-  email:
-    recipients:
-      - akalsi.dev@gmail.com
+  - ./travis_email_artifacts $EMAIL_ADDR

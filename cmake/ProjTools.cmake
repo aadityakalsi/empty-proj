@@ -377,12 +377,34 @@ endif(USE_CODE_COV)
 endfunction(add_lib)
 
 # -- add_lib_build_def: Add library compile definition
-function(add_lib_build_def tgt buildSym)
+function(add_lib_build_def tgt file buildTemplate)
   get_target_property(tgttype ${tgt} TYPE)
   string(COMPARE EQUAL ${tgttype} "SHARED_LIBRARY" is_shared)
+  string(COMPARE EQUAL ${tgttype} "STATIC_LIBRARY" is_static)
+  file(WRITE ${file}
+    "/* Export symbol definitions */\n"
+    "#if defined(${buildTemplate}_LINK_STATIC)\n"
+    "#  define ${buildTemplate}_API \n"
+    "#elif defined(${buildTemplate}_BUILD)\n"
+    "#  if defined(_MSC_VER)\n"
+    "#    define ${buildTemplate}_API __declspec(dllexport)\n"
+    "#  else\n"
+    "#    define ${buildTemplate}_API __attribute__((__visibility__(\"default\")))\n"
+    "#  endif\n"
+    "#else\n"
+    "#  if defined(_MSC_VER)\n"
+    "#    define ${buildTemplate}_API __declspec(dllimport)\n"
+    "#  else\n"
+    "#    define ${buildTemplate}_API \n"
+    "#  endif\n"
+    "#endif/*defined(${buildTemplate}_LINK_STATIC)*/\n")
   if(is_shared)
-    target_compile_definitions(${tgt} PRIVATE ${buildSym})
+    target_compile_definitions(${tgt} PRIVATE "${buildTemplate}_BUILD")
   endif()
+  if(is_static)
+    target_compile_definitions(${tgt} PRIVATE "${buildTemplate}_LINK_STATIC")
+  endif()
+  install_hdr(${file})
 endfunction(add_lib_build_def)
 
 # -- link_libs: Link to libraries (target_link_libraries mimic)
