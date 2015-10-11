@@ -383,6 +383,10 @@ function(add_lib_build_def tgt file buildTemplate)
   string(COMPARE EQUAL ${tgttype} "STATIC_LIBRARY" is_static)
   file(WRITE ${file}
     "/* Export symbol definitions */\n"
+    "\n"
+    "/*!\n"
+    " * Export API macro definition\n"
+    " */\n"
     "#if defined(${buildTemplate}_LINK_STATIC)\n"
     "#  define ${buildTemplate}_API \n"
     "#elif defined(${buildTemplate}_BUILD)\n"
