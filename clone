@@ -50,3 +50,5 @@ mkdir include
 git init .
 git add * .travis.yml 
 
+# notes
+echo "NOTE: Update .travis.yml with you emailif you want artifacts emailed to yourself. You may also disable this."

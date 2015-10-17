@@ -17,7 +17,7 @@ install:
   # We use gcc-4.8
   - if [ ${CC} = "gcc" ]; then export CC="gcc-4.8" && export CXX="g++-4.8"; fi
   - export INSTALL_BASE_DIR="`pwd`/install"
-  - export EMAIL_ADDR='akalsi.work@gmail.com'
+  - export EMAIL_ADDR='<YOUR_EMAIL>'
 
 script:
   - echo y | tools/build $BTYPE
