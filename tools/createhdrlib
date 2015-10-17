@@ -1,0 +1,36 @@
+#!/bin/bash
+
+if [ $# -lt 1 ];
+then
+  echo "Usage:"
+  echo "  createhdrlib lib_name [relative_loc]"
+  exit 1
+fi
+
+tools_dir=$(cd "$(dirname "$0")"; pwd)
+proj_dir=`dirname ${tools_dir}`
+
+libname=$1
+
+if [ $# -ne 2 ];
+then
+  pth="${libname}"
+else
+  pth="$2/${libname}"
+fi
+
+echo "Making include directories..."
+mkdir -p "${proj_dir}/include/${pth}"
+
+echo \
+"# header only library : ${libname}
+# -- Headers
+# export
+set(${libname}_exp_hdr
+    )
+
+# -- Install!
+install_hdr(\${${libname}_exp_hdr})" > "${proj_dir}/${libname}.cmake"
+
+# notify user to add this to CMakeLists.txt
+echo "NOTE: You may want to add ${proj_dir}/${libname}.cmake to your CMakeLists.txt file"

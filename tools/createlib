@@ -1,0 +1,79 @@
+#!/bin/bash
+
+if [ $# -lt 1 ];
+then
+  echo "Usage:"
+  echo "  createlib lib_name [relative_loc]"
+  exit 1
+fi
+
+tools_dir=$(cd "$(dirname "$0")"; pwd)
+proj_dir=`dirname ${tools_dir}`
+
+libname=$1
+
+if [ $# -ne 2 ];
+then
+  pth="${libname}"
+else
+  pth="$2/${libname}"
+fi
+
+echo "Making source and include directories..."
+mkdir -p "${proj_dir}/include/${pth}"
+mkdir -p "${proj_dir}/src/${pth}"
+
+libnameup=`echo ${libname} | awk '{print toupper($0)}'`
+
+echo \
+"# library : ${libname}
+# -- Version
+set(${libname}_maj_ver 0)
+set(${libname}_min_ver 0)
+set(${libname}_pat_ver 1)
+
+set(${libname}_lib_ver
+    \"\${${libname}_maj_ver}.\${${libname}_min_ver}.\${${libname}_pat_ver}\")
+
+set(${libname}_lib_compat_ver
+    \"\${${libname}_maj_ver}.\${${libname}_min_ver}\")
+
+# -- Headers
+# export
+set(${libname}_exp_hdr
+    )
+
+# internal
+set(${libname}_int_hdr
+    )
+
+# -- Sources
+set(${libname}_src
+    )
+
+# -- Targets
+# --- shared
+add_lib(${libname} SHARED \${${libname}_src} \${${libname}_int_hdr} \${${libname}_exp_hdr})
+add_lib_build_def(${libname} include/${pth}/exportsym.h ${libnameup})
+add_comp_def(${libname} ${libnameup}_MAJ=\${${libname}_maj_ver})
+add_comp_def(${libname} ${libnameup}_MIN=\${${libname}_min_ver})
+add_comp_def(${libname} ${libnameup}_PAT=\${${libname}_pat_ver})
+link_libs(${libname} )
+set_tgt_ver(${libname} \${${libname}_lib_ver} \${${libname}_lib_compat_ver})
+
+# --- static
+add_lib(${libname}_s STATIC \${${libname}_src} \${${libname}_int_hdr} \${${libname}_exp_hdr})
+add_lib_build_def(${libname}_s include/${pth}/exportsym.h ${libnameup})
+add_comp_def(${libname}_s ${libnameup}_MAJ=\${${libname}_maj_ver})
+add_comp_def(${libname}_s ${libnameup}_MIN=\${${libname}_min_ver})
+add_comp_def(${libname}_s ${libnameup}_PAT=\${${libname}_pat_ver})
+link_libs(${libname}_s )
+set_tgt_ver(${libname}_s \${${libname}_lib_ver} \${${libname}_lib_compat_ver})
+
+# -- Install!
+install_hdr(\${${libname}_exp_hdr})
+install_tgt(${libname})
+install_tgt(${libname}_s)" > "${proj_dir}/${libname}.cmake"
+
+# notify user to add this to CMakeLists.txt
+echo "NOTE: You may want to add ${proj_dir}/${libname}.cmake to your CMakeLists.txt file"
