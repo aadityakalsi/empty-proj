@@ -64,10 +64,6 @@
 
 cmake_minimum_required(VERSION 3.0)
 
-if(PROJ_BASE_DIR)
-  return()
-endif()
-
 function(projmsg)
   message("-- [${PROJ_NAME}] " ${ARGV})
 endfunction(projmsg)
@@ -200,7 +196,9 @@ if (UNIX)
 endif(UNIX)
 
 # -- For Windows, add the required system libraries
-include(InstallRequiredSystemLibraries)
+if(WIN32)
+  include(InstallRequiredSystemLibraries)
+endif()
 
 # -- Set up temp dir
 set(TMPDIR ${CMAKE_BINARY_DIR}/temp CACHE INTERNAL "Temp dir" FORCE)
