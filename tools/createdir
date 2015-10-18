@@ -1,0 +1,19 @@
+#!/bin/bash
+
+tools_dir=$(cd "$(dirname "$0")"; pwd)
+proj_dir=`dirname ${tools_dir}`
+
+olddir=`pwd`
+
+cd ${proj_dir}
+
+dir=$1
+
+mkdir -p $dir
+
+echo \
+"# proj $dir sub module
+" > ${dir}/CMakeLists.txt
+
+echo " NOTE: Remember to add the new subdirectory in the parent CMakeLists.txt."
+echo " NOTE: Remember to add the new subdirectory to the doc/Doxyfile.in."
