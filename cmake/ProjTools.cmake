@@ -379,24 +379,28 @@ function(add_lib_build_def tgt file buildTemplate)
   get_target_property(tgttype ${tgt} TYPE)
   string(COMPARE EQUAL ${tgttype} "SHARED_LIBRARY" is_shared)
   string(COMPARE EQUAL ${tgttype} "STATIC_LIBRARY" is_static)
+  get_filename_component(n ${file} NAME)
   file(WRITE ${file}
+    "/*! \\file ${n} */\n"
     "/* Export symbol definitions */\n"
     "\n"
-    "/*!\n"
-    " * Export API macro definition\n"
-    " */\n"
     "#if defined(${buildTemplate}_LINK_STATIC)\n"
+    "/*! Macro to define library export symbol */\n"
     "#  define ${buildTemplate}_API \n"
     "#elif defined(${buildTemplate}_BUILD)\n"
     "#  if defined(_MSC_VER)\n"
+    "/*! Macro to define library export symbol */\n"
     "#    define ${buildTemplate}_API __declspec(dllexport)\n"
     "#  else\n"
+    "/*! Macro to define library export symbol */\n"
     "#    define ${buildTemplate}_API __attribute__((__visibility__(\"default\")))\n"
     "#  endif\n"
     "#else\n"
     "#  if defined(_MSC_VER)\n"
+    "/*! Macro to define library export symbol */\n"
     "#    define ${buildTemplate}_API __declspec(dllimport)\n"
     "#  else\n"
+    "/*! Macro to define library export symbol */\n"
     "#    define ${buildTemplate}_API \n"
     "#  endif\n"
     "#endif/*defined(${buildTemplate}_LINK_STATIC)*/\n")
@@ -531,11 +535,12 @@ function(add_test_exe testname filename)
   # deal with test on install
   # copy file to temp folder
   set(test_dirname "${testname}.toi")
-  projmsg("Adding install test for ${testname} in dir ${test_dirname}")
   
   # copy the file over
   file(MAKE_DIRECTORY ${test_dirname})
-  file(COPY ${filename} DESTINATION ${test_dirname})
+  get_filename_component(tfilename ${filename} NAME)
+  get_filename_component(filepath ${filename} ABSOLUTE)
+  configure_file(${filepath} "${test_dirname}/${tfilename}" COPYONLY)
 
   set(install_test_args ${ARGV})
   list(REMOVE_AT install_test_args 0)
