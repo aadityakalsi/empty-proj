@@ -277,8 +277,8 @@ else()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Oy- /EHsc")
   set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /MDd")
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MDd")
-  set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /MD")
-  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MD")
+  set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /MD /GS-")
+  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MD /GS-")
 endif()
 
 # -- add_comp_flag: Add compile flag to target
@@ -391,19 +391,33 @@ function(add_lib_build_def tgt file buildTemplate)
     "#  if defined(_MSC_VER)\n"
     "/*! Macro to define library export symbol */\n"
     "#    define ${buildTemplate}_API __declspec(dllexport)\n"
-    "#  else\n"
+    "#  else/*GCC-like compiler*/\n"
     "/*! Macro to define library export symbol */\n"
     "#    define ${buildTemplate}_API __attribute__((__visibility__(\"default\")))\n"
     "#  endif\n"
-    "#else\n"
+    "#else/* import symbol */\n"
     "#  if defined(_MSC_VER)\n"
     "/*! Macro to define library export symbol */\n"
     "#    define ${buildTemplate}_API __declspec(dllimport)\n"
-    "#  else\n"
+    "#  else/*GCC-like compiler*/\n"
     "/*! Macro to define library export symbol */\n"
     "#    define ${buildTemplate}_API \n"
     "#  endif\n"
-    "#endif/*defined(${buildTemplate}_LINK_STATIC)*/\n")
+    "#endif/*defined(${buildTemplate}_LINK_STATIC)*/\n"
+    "\n"
+    "/*! Allow deprecation? */\n"
+    "#define ${buildTemplate}_ALLOW_DEPRECATION 1\n"
+    "\n"
+    "#if ${buildTemplate}_ALLOW_DEPRECATION\n"
+    "/*! Deprecated macro */\n"
+    "#  if defined(_MSC_VER)\n"
+    "#    define ${buildTemplate}_DEPRECATED(x) __declspec(deprecated(x))\n"
+    "#  else/*GCC-like compiler*/\n"
+    "#    define ${buildTemplate}_DEPRECATED(x) __attribute__((deprecated(x)))\n"
+    "#  endif/*defined(_MSC_VER)*/\n"
+    "#else/* render macro useless */\n"
+    "#  define ${buildTemplate}_DEPRECATED(x) \n"
+    "#endif/*!${buildTemplate}_ALLOW_DEPRECATION*/\n")
   if(is_shared)
     target_compile_definitions(${tgt} PRIVATE "${buildTemplate}_BUILD")
   endif()
@@ -415,8 +429,8 @@ endfunction(add_lib_build_def)
 
 # -- link_libs: Link to libraries (target_link_libraries mimic)
 function(link_libs tgt)
-    set(xtra_libs )
-	
+  set(xtra_libs )
+
 if (USE_CODE_COV)
   if (APPLE)
     add_link_flag(${tgt} --coverage)
