@@ -51,4 +51,4 @@ git init .
 git add * .travis.yml 
 
 # notes
-echo "NOTE: Update .travis.yml with you emailif you want artifacts emailed to yourself. You may also disable this."
+echo "NOTE: Update .travis.yml with your email if you want artifacts emailed to yourself. You may also disable this."
