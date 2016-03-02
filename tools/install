@@ -16,9 +16,5 @@ export INSTALL_BASE_DIR="${tools_dir}/../install"
 bash -c "echo y | ${tools_dir}/regen ${PARAMS}"
 export VERBOSE=1
 
-# do doc build
-cmake --build ${tools_dir}/../build --target doc --config $1
-cp -rf ${proj_dir}/build/doc/html/* ${proj_dir}/doc/html
-
 # do install
 cmake --build ${tools_dir}/../build --target install --config $1
