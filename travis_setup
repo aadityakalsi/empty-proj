@@ -25,6 +25,6 @@ fi
 # use CMake 3.2
 echo "[TRAVIS_SETUP] Installing CMake 3.2..."
 cd /tmp
-(curl http://www.cmake.org/files/v3.2/cmake-3.2.2.tar.gz | tar -xzf -) &> /dev/null
+(curl https://www.cmake.org/files/v3.2/cmake-3.2.2.tar.gz | tar -xzf -) &> /dev/null
 cd cmake-3.2.2
 (./bootstrap && sudo make install -j8) &> /dev/null
