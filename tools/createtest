@@ -15,15 +15,18 @@ fi
 fn=`basename $1`
 d=`dirname $1`
 
-if [ $d = "" ];
+if [ $d = "." ];
 then
-  d="."
+  d=""
+  dfull=""
+else
+  dfull="$d/"
 fi
 
 mkdir -p ${proj_dir}/test/${d}
 
 extension="${fn##*.}"
-echo $extension
+
 if [ $extension = "c" ];
 then
     echo \
@@ -36,13 +39,13 @@ then
 
 TEST_FUNC( no_op )
 {
-    TEST_TRUE( true );
+    TEST_TRUE( 1 );
 }
 
 void SetupTests(void)
 {
     REG_TEST( no_op );
-}" > ${proj_dir}/test/${d}/${fn}
+}" > ${proj_dir}/test/${dfull}${fn}
 else
     echo \
 "/**
@@ -55,11 +58,13 @@ else
 CPP_TEST( no_op )
 {
 
-}" > ${proj_dir}/test/${d}/${fn}
+}" > ${proj_dir}/test/${dfull}${fn}
 fi
+
+echo "DFULL: $dfull"
 
 echo \
 "
-add_test_exe    (${fn%.*} ${d}/${fn})
+add_test_exe    (${fn%.*} ${dfull}${fn})
 test_link_libs  (${fn%.*} )
 create_test     (${fn%.*})" >> ${proj_dir}/test/CMakeLists.txt
