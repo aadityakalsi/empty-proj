@@ -12,3 +12,7 @@ echo y | ${tools_dir}/regen Debug
 cd build
 export VERBOSE=1
 cmake --build . --target code_cov
+
+echo "--------------------------------------------"
+echo "| See results in `pwd`/coverage/index.html"
+echo "--------------------------------------------"

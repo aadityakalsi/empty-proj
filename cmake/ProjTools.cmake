@@ -200,7 +200,9 @@ if (UNIX)
 endif(UNIX)
 
 # -- For Windows, add the required system libraries
-include(InstallRequiredSystemLibraries)
+if(WIN32)
+  include(InstallRequiredSystemLibraries)
+endif()
 
 # -- Set up temp dir
 set(TMPDIR ${CMAKE_BINARY_DIR}/temp CACHE INTERNAL "Temp dir" FORCE)
