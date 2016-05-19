@@ -12,19 +12,7 @@ dir=$1
 mkdir -p $dir
 
 echo \
-"
-# proj $dir sub module
-
-set(${dir}_dirname $dir)
-
-# -- Exported headers
-set(${dir}_hdrs )
-
-# -- Install headers
-install_hdr(\${${dir}_hdrs})
-
-add_hdrs_ide(\${${dir}_hdrs})
-
+"# proj $dir sub module
 " > ${dir}/CMakeLists.txt
 
 echo " NOTE: Remember to add the new subdirectory in the parent CMakeLists.txt."

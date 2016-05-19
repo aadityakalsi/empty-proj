@@ -1,0 +1,63 @@
+#!/bin/bash
+
+if [ $# -lt 1 ];
+then
+  echo "Usage:"
+  echo "  createprog exe_name [relative_loc]"
+  exit 1
+fi
+
+tools_dir=$(cd "$(dirname "$0")"; pwd)
+proj_dir=`dirname ${tools_dir}`
+
+exename=$1
+
+if [ $# -ne 2 ];
+then
+  pth="${exename}"
+else
+  pth="$2/${exename}"
+fi
+
+echo "Making source and include directories..."
+mkdir -p "${proj_dir}/include/${pth}"
+mkdir -p "${proj_dir}/src/${pth}"
+
+exenameup=`echo ${exename} | awk '{print toupper($0)}'`
+
+echo \
+"# executable : ${exename}
+# -- Version
+set(${exename}_maj_ver 0)
+set(${exename}_min_ver 0)
+set(${exename}_pat_ver 1)
+
+set(${exename}_lib_ver
+    \"\${${exename}_maj_ver}.\${${exename}_min_ver}.\${${exename}_pat_ver}\")
+
+set(${exename}_lib_compat_ver
+    \"\${${exename}_maj_ver}.\${${exename}_min_ver}\")
+
+# -- Headers
+# internal
+set(${exename}_int_hdr
+    )
+
+# -- Sources
+set(${exename}_src
+    )
+
+# -- Targets
+# --- executable
+add_exe(${exename} \${${exename}_src} \${${exename}_int_hdr})
+add_comp_def(${exename} ${exenameup}_MAJ=\${${exename}_maj_ver})
+add_comp_def(${exename} ${exenameup}_MIN=\${${exename}_min_ver})
+add_comp_def(${exename} ${exenameup}_PAT=\${${exename}_pat_ver})
+link_libs(${exename} )
+set_tgt_ver(${exename} \${${exename}_lib_ver} \${${exename}_lib_compat_ver})
+
+# -- Install!
+install_tgt(${exename})" > "${proj_dir}/${exename}.cmake"
+
+# notify user to add this to CMakeLists.txt
+echo "NOTE: You may want to add ${proj_dir}/${exename}.cmake to your CMakeLists.txt file"

@@ -64,9 +64,9 @@
 
 cmake_minimum_required(VERSION 3.0)
 
-if(PROJ_BASE_DIR)
-  return()
-endif()
+# if(PROJ_BASE_DIR)
+#   return()
+# endif()
 
 function(projmsg)
   message("-- [${PROJ_NAME}] " ${ARGV})
@@ -275,8 +275,8 @@ if(NOT MSVC)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-omit-frame-pointer")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-omit-frame-pointer")
 else()
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /Oy- /EHca")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Oy- /EHca")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /Oy- /EHc")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Oy- /EHsc")
   set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /MDd")
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MDd")
   set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /MD")

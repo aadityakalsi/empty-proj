@@ -12,15 +12,24 @@ then
   exit 1
 fi
 
-mkdir -p ${proj_dir}/test
-
 fn=`basename $1`
+d=`dirname $1`
 
-echo \
-"
-/**
+if [ $d = "" ];
+then
+  d="."
+fi
+
+mkdir -p ${proj_dir}/test/${d}
+
+extension="${fn##*.}"
+echo $extension
+if [ $extension = "c" ];
+then
+    echo \
+"/**
  * \file ${fn}
- * \date `date +%Y`
+ * \date `date \"+%b %d, %Y\"`
  */
 
 #include \"unittest.h\"
@@ -33,12 +42,24 @@ TEST_FUNC( no_op )
 void SetupTests(void)
 {
     REG_TEST( no_op );
-}
-" > ${proj_dir}/test/${fn}
+}" > ${proj_dir}/test/${d}/${fn}
+else
+    echo \
+"/**
+ * \file ${fn}
+ * \date `date \"+%b %d, %Y\"`
+ */
+
+#include \"unittest.hpp\"
+
+CPP_TEST( no_op )
+{
+
+}" > ${proj_dir}/test/${d}/${fn}
+fi
 
 echo \
 "
-add_test_exe    (${fn%.*} ${fn})
+add_test_exe    (${fn%.*} ${d}/${fn})
 test_link_libs  (${fn%.*} )
-create_test     (${fn%.*})
-" >> ${proj_dir}/test/CMakeLists.txt
+create_test     (${fn%.*})" >> ${proj_dir}/test/CMakeLists.txt
