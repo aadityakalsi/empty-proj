@@ -61,8 +61,6 @@ CPP_TEST( no_op )
 }" > ${proj_dir}/test/${dfull}${fn}
 fi
 
-echo "DFULL: $dfull"
-
 echo \
 "
 add_test_exe    (${fn%.*} ${dfull}${fn})
