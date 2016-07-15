@@ -57,7 +57,6 @@ else
 
 CPP_TEST( no_op )
 {
-
 }" > ${proj_dir}/test/${dfull}${fn}
 fi
 
