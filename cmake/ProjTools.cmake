@@ -560,19 +560,33 @@ endfunction(add_hdrs_tgt_ide)
 function(add_test_exe testname filename)
   ## deal with normal test
   add_exe(${ARGV})
-  
+  add_inc_dir(${testname} ${PROJ_DIR}/unittest)
+
   # On Windows, the custom build detects the "ERROR" word in the
   # output and fails a passing test. We simply detect on the executable's
   # return code to detect failure.
+
+  # if(USING_MSVC AND ((${testname} STREQUAL "test_unittest") OR (${testname} STREQUAL "test_cppunittest")))
+  #   add_custom_command(TARGET ${testname} POST_BUILD COMMAND ${testname} 2>nul)
+  # else()
+  #   add_custom_command(TARGET ${testname} POST_BUILD COMMAND ${testname})
+  # endif()
+
   if(USING_MSVC AND ((${testname} STREQUAL "test_unittest") OR (${testname} STREQUAL "test_cppunittest")))
-    add_custom_command(TARGET ${testname} POST_BUILD COMMAND ${testname} 2>nul)
+    add_custom_command(OUTPUT ${testname}.dorun
+                       COMMAND ${testname} 2>nul
+                       COMMAND ${CMAKE_COMMAND} -E touch ${testname}.dorun
+                       DEPENDS ${testname})
   else()
-    add_custom_command(TARGET ${testname} POST_BUILD COMMAND ${testname})
+    add_custom_command(OUTPUT ${testname}.dorun
+                       COMMAND ${testname}
+                       COMMAND ${CMAKE_COMMAND} -E touch ${testname}.dorun
+                       DEPENDS ${testname})
   endif()
 
-  add_inc_dir(${testname} ${PROJ_DIR}/unittest)
-  add_test(${testname} ${testname})
-  add_dependencies(check ${testname})
+  add_custom_target("${testname}.exec" DEPENDS "${testname}.dorun")
+  add_test("${testname}.test" ${testname})
+  add_dependencies(check "${testname}.exec")
 
   # deal with test on install
   # copy file to temp folder
